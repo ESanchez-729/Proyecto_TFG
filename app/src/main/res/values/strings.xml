@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">Proyecto_TFG</string>
+    <string name="news_menu">News</string>
+    <string name="search_menu">News</string>
+    <string name="library_menu">News</string>
 </resources>
