@@ -5,6 +5,9 @@
       <map>
         <entry key="..\:/Users/34601/AndroidStudioProjects/Proyecto_TFG/app/src/main/res/drawable/ic_baseline_search_24.xml" value="0.31296296296296294" />
         <entry key="..\:/Users/34601/AndroidStudioProjects/Proyecto_TFG/app/src/main/res/layout/activity_main.xml" value="0.2957427536231884" />
+        <entry key="..\:/Users/34601/AndroidStudioProjects/Proyecto_TFG/app/src/main/res/layout/fragment_library.xml" value="0.1828125" />
+        <entry key="..\:/Users/34601/AndroidStudioProjects/Proyecto_TFG/app/src/main/res/layout/fragment_news.xml" value="0.16875" />
+        <entry key="..\:/Users/34601/AndroidStudioProjects/Proyecto_TFG/app/src/main/res/layout/fragment_search.xml" value="0.1828125" />
         <entry key="..\:/Users/34601/AndroidStudioProjects/Proyecto_TFG/app/src/main/res/menu/bottom_nav_menu.xml" value="0.36666666666666664" />
       </map>
     </option>
