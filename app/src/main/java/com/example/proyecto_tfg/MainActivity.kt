@@ -54,6 +54,7 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavigationView.selectedItemId = R.id.news_button
         client = OkHttpClient()
 
+        // Comprobacion de permisos
         if(comprobarPermisos()){
 
             Thread { pruebaPost() }.start()
