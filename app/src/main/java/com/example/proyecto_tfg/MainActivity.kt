@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //Binding del ActivityMain
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
