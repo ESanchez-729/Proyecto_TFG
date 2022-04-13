@@ -11,6 +11,7 @@ import android.view.ViewGroup
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
+//Fragments de libreria
 /**
  * A simple [Fragment] subclass.
  * Use the [LibraryFragment.newInstance] factory method to
