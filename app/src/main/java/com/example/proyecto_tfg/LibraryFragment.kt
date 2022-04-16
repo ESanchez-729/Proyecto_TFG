@@ -5,6 +5,17 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import android.view.MotionEvent
+import androidx.annotation.NonNull
+import android.widget.Toast
+import android.view.GestureDetector
+import androidx.recyclerview.widget.LinearLayoutManager
+import android.content.Context
+import android.view.GestureDetector.SimpleOnGestureListener
+import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
+import java.util.jar.Manifest
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -22,6 +33,10 @@ class LibraryFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
 
+    var reciclador: RecyclerView? = null
+    var adaptador: RecyclerView.Adapter<*>? = null
+    var gestor: RecyclerView.LayoutManager? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -36,6 +51,52 @@ class LibraryFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_library, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        reciclador = view.findViewById(R.id.list) as RecyclerView
+
+        val datos: MutableList<GameItem> = ArrayList()
+
+        for (i in 0..39) {
+            datos.add(
+                GameItem(
+                    id = 10,
+                    image = R.drawable.beluga,
+                    title = getString(R.string.search_menu),
+                    platform = getString(R.string.search_menu),
+                    status = getString(R.string.search_menu),
+                    score = 7.78,
+                )
+            )
+        }
+
+        reciclador!!.setHasFixedSize(true)
+        gestor = LinearLayoutManager(activity as MainActivity)
+
+        reciclador!!.layoutManager = gestor
+        adaptador = Adapter(datos)
+        reciclador!!.adapter = adaptador
+
+        reciclador!!.addOnItemTouchListener(object : OnItemTouchListener {
+            var gestureDetector =
+                GestureDetector(activity as MainActivity,
+                    object : SimpleOnGestureListener() {
+                        override fun onSingleTapUp(event: MotionEvent): Boolean {
+                            return true
+                        }
+                    })
+
+            override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+
+                return false
+            }
+
+            override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
+            override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
+        })
     }
 
     companion object {
