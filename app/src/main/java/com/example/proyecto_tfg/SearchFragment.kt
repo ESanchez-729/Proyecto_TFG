@@ -3,21 +3,27 @@ package com.example.proyecto_tfg
 import android.app.SearchManager
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.internal.EMPTY_RESPONSE
+import java.io.IOException
+import java.text.DecimalFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
@@ -29,10 +35,14 @@ class SearchFragment : Fragment() {
     var reciclador: RecyclerView? = null
     var adaptador: RecyclerView.Adapter<*>? = null
     var gestor: RecyclerView.LayoutManager? = null
+    lateinit var client: OkHttpClient
+    lateinit var gson : Gson
+    private val url = "https://api.igdb.com/v4/games/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        client = OkHttpClient()
+        gson = Gson()
     }
 
     override fun onCreateView(
@@ -49,18 +59,71 @@ class SearchFragment : Fragment() {
 
         reciclador = view.findViewById(R.id.search_list) as RecyclerView
 
-        val datos: MutableList<GameItem> = ArrayList()
+    }
 
-        for (i in 0..39) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+
+        inflater.inflate(R.menu.search_bar_menu, menu)
+
+        val manager = activity?.getSystemService(Context.SEARCH_SERVICE) as SearchManager
+        val searchItem = menu?.findItem(R.id.search_bar)
+        val searchView = searchItem.actionView as SearchView
+
+        searchView.setSearchableInfo(manager.getSearchableInfo(requireActivity().componentName))
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+
+                var search = ""
+                if(query != null) {search = query}
+                searchView.clearFocus()
+                val data : List<JsonTransformer> = getData(search)
+                showData(data)
+                searchView.setQuery("", false)
+                searchItem.collapseActionView()
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+
+                return false
+            }
+        })
+    }
+
+    fun showData(rawData : List<JsonTransformer>) {
+
+        val datos: MutableList<GameItem> = ArrayList()
+        val dec = DecimalFormat("##.##")
+
+        for (item in rawData) {
+
+            var finalPlatform : String = ""
+
+            if (item.platforms.size == 1) {
+
+                finalPlatform = item.platforms[0].abbreviation
+
+            } else {
+
+                for(platform in item.platforms) {
+
+                    finalPlatform += "${platform.abbreviation}, "
+                }
+
+                finalPlatform = finalPlatform.dropLast(2)
+            }
 
             datos.add(
+
                 GameItem(
-                    id = 10,
-                    image = "https://img3.gelbooru.com//images/7b/ba/7bba6ee153847072402eb4f3878a5bdd.png",
-                    title = getString(R.string.search_menu),
-                    platform = getString(R.string.search_menu),
-                    status = StatusEnum.COMPLETED.toString(),
-                    score = 7.78,
+                    id = item.id,
+                    image = "https:" + item.cover.url,
+                    title = item.name,
+                    platform = finalPlatform,
+                    status = StatusEnum.PLAN_TO_PLAY.toString(),
+                    score = item.total_rating.toInt()
                 )
             )
         }
@@ -89,32 +152,54 @@ class SearchFragment : Fragment() {
             override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
             override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
         })
+
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    fun getData(searchArg : String) : List<JsonTransformer> {
 
-        inflater.inflate(R.menu.search_bar_menu, menu)
+        val markdownMediaType = "text/x-markdown; charset=utf-8".toMediaType()
 
-        val manager = activity?.getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        val searchItem = menu?.findItem(R.id.search_bar)
-        val searchView = searchItem.actionView as SearchView
+        val postBody = """
+            fields id, name, cover.url, platforms.abbreviation, total_rating;
+            search "$searchArg";
+            where platforms.abbreviation != null & cover.url != null & total_rating != null;
+            limit 50;
+            """.trimMargin()
 
-        searchView.setSearchableInfo(manager.getSearchableInfo(requireActivity().componentName))
+        val request = Request.Builder().url(this.url).post(postBody.toRequestBody(markdownMediaType))
+            .addHeader("Client-ID", resources.getString(R.string.ClientID))
+            .addHeader("Authorization", resources.getString(R.string.Authorization)).build()
 
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+        client.newCall(request).execute().use { response ->
 
-            override fun onQueryTextSubmit(query: String?): Boolean {
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+            val postResult : String = response.body?.string() ?: throw IOException("Data not found $response")
 
-                searchView.clearFocus()
-                searchView.setQuery("", false)
-                searchItem.collapseActionView()
-                return true
-            }
+            Log.d(":::", postResult)
 
-            override fun onQueryTextChange(newText: String?): Boolean {
+            val itemType = object : TypeToken<List<JsonTransformer>>() {}.type
+            return gson.fromJson(postResult, itemType)
 
-                return false
-            }
-        })
+        }
+
     }
+
 }
+
+data class JsonTransformer (
+    var id: Int,
+    var cover : Cover,
+    var name : String,
+    var platforms : List<Platform>,
+    var total_rating : Double
+)
+
+data class Cover (
+    val id: Int,
+    val url: String
+        )
+
+data class Platform (
+    val id: Int,
+    val abbreviation : String
+        )

@@ -21,6 +21,8 @@ import androidx.core.app.ActivityCompat
 
 import android.os.Build
 import android.util.Log
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
 
 
 class MainActivity : AppCompatActivity() {
@@ -37,6 +39,9 @@ class MainActivity : AppCompatActivity() {
         //Binding del ActivityMain
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val policy: ThreadPolicy = ThreadPolicy.Builder().permitAll().build()
+        StrictMode.setThreadPolicy(policy)
 
         binding.bottomNavigationView.setOnItemSelectedListener {
 
