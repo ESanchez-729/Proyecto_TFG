@@ -55,7 +55,7 @@ class LibraryFragment : Fragment() {
                     title = getString(R.string.search_menu),
                     platform = getString(R.string.search_menu),
                     status = StatusEnum.COMPLETED.toString(),
-                    score = 7.78,
+                    score = 77,
                 )
             )
         }

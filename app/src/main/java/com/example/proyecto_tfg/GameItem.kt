@@ -7,5 +7,5 @@ data class GameItem (
         val title: String,
         val status: String,
         val platform: String,
-        val score: Double
+        val score: Int
     )
