@@ -44,7 +44,7 @@ class LibraryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        reciclador = view.findViewById(R.id.list) as RecyclerView
+        reciclador = view.findViewById(R.id.library_list) as RecyclerView
 
         val datos: MutableList<GameItem> = ArrayList()
 

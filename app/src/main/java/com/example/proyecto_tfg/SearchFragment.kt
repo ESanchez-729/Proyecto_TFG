@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -24,6 +26,9 @@ private const val ARG_PARAM2 = "param2"
  */
 class SearchFragment : Fragment() {
 
+    var reciclador: RecyclerView? = null
+    var adaptador: RecyclerView.Adapter<*>? = null
+    var gestor: RecyclerView.LayoutManager? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +46,49 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
+
+        reciclador = view.findViewById(R.id.search_list) as RecyclerView
+
+        val datos: MutableList<GameItem> = ArrayList()
+
+        for (i in 0..39) {
+
+            datos.add(
+                GameItem(
+                    id = 10,
+                    image = "https://img3.gelbooru.com//images/7b/ba/7bba6ee153847072402eb4f3878a5bdd.png",
+                    title = getString(R.string.search_menu),
+                    platform = getString(R.string.search_menu),
+                    status = StatusEnum.COMPLETED.toString(),
+                    score = 7.78,
+                )
+            )
+        }
+
+        reciclador!!.setHasFixedSize(true)
+        gestor = LinearLayoutManager(activity as MainActivity)
+
+        reciclador!!.layoutManager = gestor
+        adaptador = Adapter(datos)
+        reciclador!!.adapter = adaptador
+
+        reciclador!!.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
+            var gestureDetector =
+                GestureDetector(activity as MainActivity,
+                    object : GestureDetector.SimpleOnGestureListener() {
+                        override fun onSingleTapUp(event: MotionEvent): Boolean {
+                            return true
+                        }
+                    })
+
+            override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+
+                return false
+            }
+
+            override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
+            override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
+        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -67,11 +115,6 @@ class SearchFragment : Fragment() {
 
                 return false
             }
-
-
         })
-
-
     }
-
 }
