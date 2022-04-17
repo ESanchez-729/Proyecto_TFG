@@ -74,27 +74,4 @@ class SearchFragment : Fragment() {
 
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        val persona = Persona(
-            nombre = "",
-            edad = null,
-            dolor = true
-        )
-
-        /*val button: Button = view.findViewById(R.id.testButton)
-        var textView : TextView = view.findViewById(R.id.searchTextView)
-        button.setOnClickListener {
-            textView.text = "Patata"
-        }*/
-
-    }
-
 }
-
-data class Persona (
-    val nombre : String,
-    val edad : Int?,
-    val dolor : Boolean
-        )
