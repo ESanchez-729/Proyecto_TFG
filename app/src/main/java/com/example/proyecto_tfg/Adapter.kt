@@ -41,7 +41,7 @@ class Adapter(private val dataSet: List<GameItem>) :
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        Picasso.get().load(dataSet[position].image).resize(225,375).into(viewHolder.image)
+        Picasso.get().load(dataSet[position].image).resize(205,305).into(viewHolder.image)
         viewHolder.title.text = dataSet[position].title
         viewHolder.platform.text = dataSet[position].platform
         viewHolder.status.text = dataSet[position].status

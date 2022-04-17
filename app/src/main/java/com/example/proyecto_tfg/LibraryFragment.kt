@@ -10,11 +10,9 @@ import android.view.MotionEvent
 import android.view.GestureDetector
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.GestureDetector.SimpleOnGestureListener
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
-import android.graphics.drawable.Drawable
-import java.io.InputStream
-import java.lang.Exception
-import java.net.URL
 
 
 //Fragments de libreria

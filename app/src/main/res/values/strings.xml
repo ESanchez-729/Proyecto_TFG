@@ -3,6 +3,5 @@
     <string name="news_menu">News</string>
     <string name="search_menu">Search</string>
     <string name="library_menu">Library</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="score_field">Score: </string>
 </resources>
