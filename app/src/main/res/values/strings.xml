@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Proyecto_TFG</string>
+    <string name="app_name">My Videogame Collection</string>
     <string name="news_menu">News</string>
     <string name="search_menu">Search</string>
     <string name="library_menu">Library</string>
