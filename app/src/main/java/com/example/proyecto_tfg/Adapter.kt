@@ -1,11 +1,13 @@
 package com.example.proyecto_tfg
 
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
 
 
 class Adapter(private val dataSet: List<GameItem>) :
@@ -39,7 +41,7 @@ class Adapter(private val dataSet: List<GameItem>) :
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.image.setImageResource(dataSet[position].image)
+        Picasso.get().load(dataSet[position].image).resize(225,375).into(viewHolder.image)
         viewHolder.title.text = dataSet[position].title
         viewHolder.platform.text = dataSet[position].platform
         viewHolder.status.text = dataSet[position].status
@@ -48,5 +50,7 @@ class Adapter(private val dataSet: List<GameItem>) :
 
     // Return the size of your dataset (invoked by the layout manager)
     override fun getItemCount() = dataSet.size
+
+    
 
 }

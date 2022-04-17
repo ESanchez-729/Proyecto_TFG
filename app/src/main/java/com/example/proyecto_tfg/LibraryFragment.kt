@@ -7,20 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import android.view.MotionEvent
-import androidx.annotation.NonNull
-import android.widget.Toast
 import android.view.GestureDetector
 import androidx.recyclerview.widget.LinearLayoutManager
-import android.content.Context
 import android.view.GestureDetector.SimpleOnGestureListener
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
-import java.util.jar.Manifest
+import android.graphics.drawable.Drawable
+import java.io.InputStream
+import java.lang.Exception
+import java.net.URL
 
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
 //Fragments de libreria
 /**
@@ -29,9 +24,6 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class LibraryFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
     var reciclador: RecyclerView? = null
     var adaptador: RecyclerView.Adapter<*>? = null
@@ -39,10 +31,6 @@ class LibraryFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
     }
 
     override fun onCreateView(
@@ -61,13 +49,14 @@ class LibraryFragment : Fragment() {
         val datos: MutableList<GameItem> = ArrayList()
 
         for (i in 0..39) {
+
             datos.add(
                 GameItem(
                     id = 10,
-                    image = R.drawable.beluga,
+                    image = "https://img3.gelbooru.com//images/7b/ba/7bba6ee153847072402eb4f3878a5bdd.png",
                     title = getString(R.string.search_menu),
                     platform = getString(R.string.search_menu),
-                    status = getString(R.string.search_menu),
+                    status = StatusEnum.COMPLETED.toString(),
                     score = 7.78,
                 )
             )
@@ -99,23 +88,4 @@ class LibraryFragment : Fragment() {
         })
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment LibraryFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            LibraryFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }
 }
