@@ -4,4 +4,5 @@
     <string name="search_menu">Search</string>
     <string name="library_menu">Library</string>
     <string name="score_field">Score: </string>
+    <string name="no_Score">N/A</string>
 </resources>

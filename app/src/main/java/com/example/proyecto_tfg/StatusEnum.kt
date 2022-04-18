@@ -5,7 +5,7 @@ enum class StatusEnum{
     PLAYING,
     COMPLETED,
     ON_HOLD,
-    ABANDONED,
+    DROPPED,
     PLAN_TO_PLAY
 
 }

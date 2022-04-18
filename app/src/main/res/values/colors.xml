@@ -8,4 +8,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="blue_header">#3d5ad4</color>
+    <color name="green_status">#35c718</color>
+    <color name="yellow_status">#edd51a</color>
+    <color name="red_status">#a80505</color>
+    <color name="recycler_background">#e6e6e6</color>
+    <color name="blue_background">#1b3052</color>
 </resources>

@@ -100,30 +100,55 @@ class SearchFragment : Fragment() {
         for (item in rawData) {
 
             var finalPlatform : String = ""
+            var finalUrl : String = ""
 
-            if (item.platforms.size == 1) {
+            Log.d(":::Tag", item.toString())
 
-                finalPlatform = item.platforms[0].abbreviation
+            if (item.platforms != null) {
+
+                for(platform in item.platforms!!) {
+
+                    if (platform.abbreviation == null) {
+                        finalPlatform += "${platform.name}, "
+                    } else {
+                        finalPlatform += "${platform.abbreviation}, "
+                    }
+
+                }
 
             } else {
 
-                for(platform in item.platforms) {
+                finalPlatform = ""
 
-                    finalPlatform += "${platform.abbreviation}, "
-                }
+            }
 
-                finalPlatform = finalPlatform.dropLast(2)
+            finalPlatform = finalPlatform.dropLast(2)
+
+            if (item.total_rating == null) {
+                item.total_rating = -1.0
+            }
+
+            if (item.cover?.url == null || item.cover == null) {
+
+                finalUrl = "https://cdn.discordapp.com/attachments/787425567154634844/965678908789899264/ColorDeFondoAAAAAAAAAAAAAAA.png"
+            }
+
+            else {
+
+                val startUrl = item.cover!!.url!!.substringBeforeLast("/")
+                val endUrl = item.cover!!.url!!.substringAfterLast("/")
+                finalUrl = "https:" + startUrl.dropLast(5) + "cover_big/" + endUrl
             }
 
             datos.add(
 
                 GameItem(
                     id = item.id,
-                    image = "https:" + item.cover.url,
+                    image = finalUrl,
                     title = item.name,
                     platform = finalPlatform,
                     status = StatusEnum.PLAN_TO_PLAY.toString(),
-                    score = item.total_rating.toInt()
+                    score = item.total_rating!!.toInt()
                 )
             )
         }
@@ -160,9 +185,8 @@ class SearchFragment : Fragment() {
         val markdownMediaType = "text/x-markdown; charset=utf-8".toMediaType()
 
         val postBody = """
-            fields id, name, cover.url, platforms.abbreviation, total_rating;
+            fields id, name, cover.url, platforms.abbreviation, platforms.name, total_rating;
             search "$searchArg";
-            where platforms.abbreviation != null & cover.url != null & total_rating != null;
             limit 50;
             """.trimMargin()
 
@@ -179,27 +203,25 @@ class SearchFragment : Fragment() {
 
             val itemType = object : TypeToken<List<JsonTransformer>>() {}.type
             return gson.fromJson(postResult, itemType)
-
         }
-
     }
-
 }
 
 data class JsonTransformer (
     var id: Int,
-    var cover : Cover,
+    var cover : Cover?,
     var name : String,
-    var platforms : List<Platform>,
-    var total_rating : Double
+    var platforms : List<Platform>?,
+    var total_rating : Double?
 )
 
 data class Cover (
     val id: Int,
-    val url: String
-        )
+    var url: String?
+)
 
 data class Platform (
     val id: Int,
-    val abbreviation : String
-        )
+    val abbreviation : String?,
+    val name : String
+)

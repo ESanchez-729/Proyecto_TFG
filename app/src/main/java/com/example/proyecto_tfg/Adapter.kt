@@ -1,6 +1,5 @@
 package com.example.proyecto_tfg
 
-import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +23,7 @@ class Adapter(private val dataSet: List<GameItem>) :
         val platform: TextView = view.findViewById(R.id.platform)
         val status: TextView = view.findViewById(R.id.status)
         val score: TextView = view.findViewById(R.id.score)
+        val scoreRating: TextView = view.findViewById(R.id.score_img)
 
     }
 
@@ -41,11 +41,18 @@ class Adapter(private val dataSet: List<GameItem>) :
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        Picasso.get().load(dataSet[position].image).resize(205,305).into(viewHolder.image)
+        Picasso.get().load(dataSet[position].image).resize(175,295).into(viewHolder.image)
         viewHolder.title.text = dataSet[position].title
         viewHolder.platform.text = dataSet[position].platform
         viewHolder.status.text = dataSet[position].status
         viewHolder.score.text = dataSet[position].score.toString()
+
+        when(dataSet[position].score) {
+
+            in 1..29 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_red)
+            in 30..60 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_yellow)
+            in 61..100 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_green)
+        }
     }
 
     // Return the size of your dataset (invoked by the layout manager)
