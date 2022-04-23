@@ -1,7 +1,10 @@
 package com.example.proyecto_tfg
 
+import android.app.AlertDialog
+import android.app.Dialog
 import android.app.SearchManager
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -64,10 +67,12 @@ class SearchFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 
         inflater.inflate(R.menu.search_bar_menu, menu)
+        inflater.inflate(R.menu.search_options, menu)
 
         val manager = activity?.getSystemService(Context.SEARCH_SERVICE) as SearchManager
         val searchItem = menu?.findItem(R.id.search_bar)
         val searchView = searchItem.actionView as SearchView
+        val optionsMenu =
 
         searchView.setSearchableInfo(manager.getSearchableInfo(requireActivity().componentName))
 
@@ -90,6 +95,25 @@ class SearchFragment : Fragment() {
                 return false
             }
         })
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        return when (item.itemId) {
+
+            R.id.search_sort -> {
+
+                sortOptions()
+                true
+            }
+
+            R.id.search_filter -> {
+
+                filterOptions()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     fun showData(rawData : List<JsonTransformer>) {
@@ -147,7 +171,7 @@ class SearchFragment : Fragment() {
                     image = finalUrl,
                     title = item.name,
                     platform = finalPlatform,
-                    status = StatusEnum.PLAN_TO_PLAY.toString(),
+                    status = StatusEnum.PLAN_TO_PLAY.value,
                     score = item.total_rating!!.toInt()
                 )
             )
@@ -204,6 +228,42 @@ class SearchFragment : Fragment() {
             val itemType = object : TypeToken<List<JsonTransformer>>() {}.type
             return gson.fromJson(postResult, itemType)
         }
+    }
+
+    fun sortOptions() {
+
+        val choices = arrayOf (getString(R.string.menu_option1), getString(R.string.menu_option2), getString(R.string.menu_option3))
+
+        val options = AlertDialog.Builder(activity as MainActivity)
+            .setTitle(getString(R.string.sort_search))
+            .setSingleChoiceItems(choices, -1) {dialog, which ->
+
+
+            }
+            .setNeutralButton(getString(R.string.menu_cancel)) {dialog, which ->}
+            .setPositiveButton(getString(R.string.menu_accept)) {dialog, which ->
+
+
+            }
+            .show()
+    }
+
+    fun filterOptions() {
+
+        val choices = arrayOf (getString(R.string.filter_option1), getString(R.string.filter_option2), getString(R.string.filter_option3), getString(R.string.filter_option4), getString(R.string.filter_option5), getString(R.string.filter_option6), getString(R.string.filter_option7), getString(R.string.filter_option8))
+
+        val options = AlertDialog.Builder(activity as MainActivity)
+            .setTitle(getString(R.string.filter_search))
+            .setSingleChoiceItems(choices, -1) {dialog, which ->
+
+
+            }
+            .setNeutralButton(getString(R.string.menu_cancel)) {dialog, which ->}
+            .setPositiveButton(getString(R.string.menu_accept)) {dialog, which ->
+
+
+            }
+            .show()
     }
 }
 

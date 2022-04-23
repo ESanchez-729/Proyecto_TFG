@@ -1,11 +1,12 @@
 package com.example.proyecto_tfg
 
-enum class StatusEnum{
+enum class StatusEnum (val value: String){
 
-    PLAYING,
-    COMPLETED,
-    ON_HOLD,
-    DROPPED,
-    PLAN_TO_PLAY
+    PLAYING("Playing"),
+    COMPLETED("Completed"),
+    ON_HOLD("On Hold"),
+    DROPPED("Dropped"),
+    PLAN_TO_PLAY("Plan to Play"),
+    NOT_ADDED("Not Added")
 
 }

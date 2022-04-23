@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
             when (it.itemId) {
 
                 R.id.search_button -> replaceFragment(SearchFragment())
-                R.id.news_button -> replaceFragment(NewsFragment())
+                R.id.profile_button -> replaceFragment(ProfileFragment())
                 R.id.library_button -> replaceFragment(LibraryFragment())
 
             }
@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        binding.bottomNavigationView.selectedItemId = R.id.news_button
+        binding.bottomNavigationView.selectedItemId = R.id.profile_button
         client = OkHttpClient()
 
         // Comprobacion de permisos
@@ -113,13 +113,9 @@ class MainActivity : AppCompatActivity() {
                     return false
 
                 }
-
             }
-
         }
 
         return true
-
     }
-
 }
