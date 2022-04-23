@@ -1,8 +1,25 @@
 <resources>
     <string name="app_name">My Videogame Collection</string>
-    <string name="news_menu">News</string>
+    <string name="profile_menu">Profile</string>
     <string name="search_menu">Search</string>
     <string name="library_menu">Library</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="score_field">Score: </string>
+    <string name="no_Score">N/A</string>
+    <string name="sort_search">Sort by...</string>
+    <string name="filter_search">Filter by...</string>
+    <string name="menu_option1">Score</string>
+    <string name="menu_option2">Status</string>
+    <string name="menu_option3">Name</string>
+    <string name="menu_cancel">Cancel</string>
+    <string name="menu_accept">Accept</string>
+    <string name="filter_option1">Score: Positive</string>
+    <string name="filter_option2">Score: Negative</string>
+    <string name="filter_option3">Status: Playing</string>
+    <string name="filter_option4">Status: Completed</string>
+    <string name="filter_option5">Status: On Hold</string>
+    <string name="filter_option6">Status: Dropped</string>
+    <string name="filter_option7">Status: Plan to Play</string>
+    <string name="filter_option8">Status: Not Added</string>
+    <string name="add_button">Add</string>
+    <string name="remove_button">Remove</string>
 </resources>

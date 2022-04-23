@@ -1,7 +1,10 @@
 package com.example.proyecto_tfg
 
+import android.app.AlertDialog
+import android.app.Dialog
 import android.app.SearchManager
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -64,10 +67,12 @@ class SearchFragment : Fragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 
         inflater.inflate(R.menu.search_bar_menu, menu)
+        inflater.inflate(R.menu.search_options, menu)
 
         val manager = activity?.getSystemService(Context.SEARCH_SERVICE) as SearchManager
         val searchItem = menu?.findItem(R.id.search_bar)
         val searchView = searchItem.actionView as SearchView
+        val optionsMenu =
 
         searchView.setSearchableInfo(manager.getSearchableInfo(requireActivity().componentName))
 
@@ -92,6 +97,25 @@ class SearchFragment : Fragment() {
         })
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        return when (item.itemId) {
+
+            R.id.search_sort -> {
+
+                sortOptions()
+                true
+            }
+
+            R.id.search_filter -> {
+
+                filterOptions()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     fun showData(rawData : List<JsonTransformer>) {
 
         val datos: MutableList<GameItem> = ArrayList()
@@ -100,30 +124,55 @@ class SearchFragment : Fragment() {
         for (item in rawData) {
 
             var finalPlatform : String = ""
+            var finalUrl : String = ""
 
-            if (item.platforms.size == 1) {
+            Log.d(":::Tag", item.toString())
 
-                finalPlatform = item.platforms[0].abbreviation
+            if (item.platforms != null) {
+
+                for(platform in item.platforms!!) {
+
+                    if (platform.abbreviation == null) {
+                        finalPlatform += "${platform.name}, "
+                    } else {
+                        finalPlatform += "${platform.abbreviation}, "
+                    }
+
+                }
 
             } else {
 
-                for(platform in item.platforms) {
+                finalPlatform = ""
 
-                    finalPlatform += "${platform.abbreviation}, "
-                }
+            }
 
-                finalPlatform = finalPlatform.dropLast(2)
+            finalPlatform = finalPlatform.dropLast(2)
+
+            if (item.total_rating == null) {
+                item.total_rating = -1.0
+            }
+
+            if (item.cover?.url == null || item.cover == null) {
+
+                finalUrl = "https://cdn.discordapp.com/attachments/787425567154634844/965678908789899264/ColorDeFondoAAAAAAAAAAAAAAA.png"
+            }
+
+            else {
+
+                val startUrl = item.cover!!.url!!.substringBeforeLast("/")
+                val endUrl = item.cover!!.url!!.substringAfterLast("/")
+                finalUrl = "https:" + startUrl.dropLast(5) + "cover_big/" + endUrl
             }
 
             datos.add(
 
                 GameItem(
                     id = item.id,
-                    image = "https:" + item.cover.url,
+                    image = finalUrl,
                     title = item.name,
                     platform = finalPlatform,
-                    status = StatusEnum.PLAN_TO_PLAY.toString(),
-                    score = item.total_rating.toInt()
+                    status = StatusEnum.PLAN_TO_PLAY.value,
+                    score = item.total_rating!!.toInt()
                 )
             )
         }
@@ -160,9 +209,8 @@ class SearchFragment : Fragment() {
         val markdownMediaType = "text/x-markdown; charset=utf-8".toMediaType()
 
         val postBody = """
-            fields id, name, cover.url, platforms.abbreviation, total_rating;
+            fields id, name, cover.url, platforms.abbreviation, platforms.name, total_rating;
             search "$searchArg";
-            where platforms.abbreviation != null & cover.url != null & total_rating != null;
             limit 50;
             """.trimMargin()
 
@@ -179,27 +227,61 @@ class SearchFragment : Fragment() {
 
             val itemType = object : TypeToken<List<JsonTransformer>>() {}.type
             return gson.fromJson(postResult, itemType)
-
         }
-
     }
 
+    fun sortOptions() {
+
+        val choices = arrayOf (getString(R.string.menu_option1), getString(R.string.menu_option2), getString(R.string.menu_option3))
+
+        val options = AlertDialog.Builder(activity as MainActivity)
+            .setTitle(getString(R.string.sort_search))
+            .setSingleChoiceItems(choices, -1) {dialog, which ->
+
+
+            }
+            .setNeutralButton(getString(R.string.menu_cancel)) {dialog, which ->}
+            .setPositiveButton(getString(R.string.menu_accept)) {dialog, which ->
+
+
+            }
+            .show()
+    }
+
+    fun filterOptions() {
+
+        val choices = arrayOf (getString(R.string.filter_option1), getString(R.string.filter_option2), getString(R.string.filter_option3), getString(R.string.filter_option4), getString(R.string.filter_option5), getString(R.string.filter_option6), getString(R.string.filter_option7), getString(R.string.filter_option8))
+
+        val options = AlertDialog.Builder(activity as MainActivity)
+            .setTitle(getString(R.string.filter_search))
+            .setSingleChoiceItems(choices, -1) {dialog, which ->
+
+
+            }
+            .setNeutralButton(getString(R.string.menu_cancel)) {dialog, which ->}
+            .setPositiveButton(getString(R.string.menu_accept)) {dialog, which ->
+
+
+            }
+            .show()
+    }
 }
 
 data class JsonTransformer (
     var id: Int,
-    var cover : Cover,
+    var cover : Cover?,
     var name : String,
-    var platforms : List<Platform>,
-    var total_rating : Double
+    var platforms : List<Platform>?,
+    var total_rating : Double?
 )
 
 data class Cover (
     val id: Int,
-    val url: String
-        )
+    var url: String?
+)
 
 data class Platform (
     val id: Int,
-    val abbreviation : String
-        )
+    val abbreviation : String?,
+    val name : String
+)

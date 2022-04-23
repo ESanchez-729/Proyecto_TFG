@@ -10,11 +10,9 @@ import android.view.MotionEvent
 import android.view.GestureDetector
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.GestureDetector.SimpleOnGestureListener
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
-import android.graphics.drawable.Drawable
-import java.io.InputStream
-import java.lang.Exception
-import java.net.URL
 
 
 //Fragments de libreria
@@ -56,7 +54,7 @@ class LibraryFragment : Fragment() {
                     image = "https://img3.gelbooru.com//images/7b/ba/7bba6ee153847072402eb4f3878a5bdd.png",
                     title = getString(R.string.search_menu),
                     platform = getString(R.string.search_menu),
-                    status = StatusEnum.COMPLETED.toString(),
+                    status = StatusEnum.COMPLETED.value,
                     score = 77,
                 )
             )
