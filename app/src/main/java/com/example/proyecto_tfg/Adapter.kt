@@ -47,10 +47,12 @@ class Adapter(private val dataSet: List<GameItem>) :
         viewHolder.platform.text = dataSet[position].platform
         viewHolder.status.text = dataSet[position].status
         //Si el juego no tiene estado se coloca N/A con un fondo blanco.
-        if (dataSet[position].score == -1) {
+        if (dataSet[position].score == -1 || dataSet[position].score == 100) {
             viewHolder.score.text = "N/A"
             viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_null)
-        } else {
+        }
+
+        else {
             //Se coloca la puntuacion y un color de fondo según esta.
             viewHolder.score.text = dataSet[position].score.toString()
             when(dataSet[position].score) {
