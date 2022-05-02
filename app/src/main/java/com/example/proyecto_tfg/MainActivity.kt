@@ -1,11 +1,8 @@
 package com.example.proyecto_tfg
 
 import android.Manifest
-import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.MediaStore
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -14,7 +11,6 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
-import java.security.Permission
 import android.content.pm.PackageManager
 
 import androidx.core.app.ActivityCompat
@@ -23,6 +19,9 @@ import android.os.Build
 import android.util.Log
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
+import com.example.proyecto_tfg.fragments.LibraryFragment
+import com.example.proyecto_tfg.fragments.ProfileFragment
+import com.example.proyecto_tfg.fragments.SearchFragment
 
 
 class MainActivity : AppCompatActivity() {

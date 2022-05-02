@@ -1,10 +1,8 @@
-package com.example.proyecto_tfg
+package com.example.proyecto_tfg.fragments
 
 import android.app.AlertDialog
-import android.app.Dialog
 import android.app.SearchManager
 import android.content.Context
-import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -15,13 +13,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.proyecto_tfg.util.Adapter
+import com.example.proyecto_tfg.enums.StatusEnum
+import com.example.proyecto_tfg.MainActivity
+import com.example.proyecto_tfg.models.GameItem
+import com.example.proyecto_tfg.R
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.internal.EMPTY_RESPONSE
 import java.io.IOException
 import java.text.DecimalFormat
 import java.util.*
@@ -232,7 +234,9 @@ class SearchFragment : Fragment() {
 
     fun sortOptions() {
 
-        val choices = arrayOf (getString(R.string.menu_option1), getString(R.string.menu_option2), getString(R.string.menu_option3))
+        val choices = arrayOf (getString(R.string.menu_option1), getString(R.string.menu_option2), getString(
+            R.string.menu_option3
+        ))
 
         val options = AlertDialog.Builder(activity as MainActivity)
             .setTitle(getString(R.string.sort_search))
@@ -240,8 +244,8 @@ class SearchFragment : Fragment() {
 
 
             }
-            .setNeutralButton(getString(R.string.menu_cancel)) {dialog, which ->}
-            .setPositiveButton(getString(R.string.menu_accept)) {dialog, which ->
+            .setNeutralButton(getString(R.string.menu_cancel)) { dialog, which ->}
+            .setPositiveButton(getString(R.string.menu_accept)) { dialog, which ->
 
 
             }
@@ -250,7 +254,11 @@ class SearchFragment : Fragment() {
 
     fun filterOptions() {
 
-        val choices = arrayOf (getString(R.string.filter_option1), getString(R.string.filter_option2), getString(R.string.filter_option3), getString(R.string.filter_option4), getString(R.string.filter_option5), getString(R.string.filter_option6), getString(R.string.filter_option7), getString(R.string.filter_option8))
+        val choices = arrayOf (getString(R.string.filter_option1), getString(R.string.filter_option2), getString(
+            R.string.filter_option3
+        ), getString(R.string.filter_option4), getString(R.string.filter_option5), getString(R.string.filter_option6), getString(
+            R.string.filter_option7
+        ), getString(R.string.filter_option8))
 
         val options = AlertDialog.Builder(activity as MainActivity)
             .setTitle(getString(R.string.filter_search))
@@ -258,8 +266,8 @@ class SearchFragment : Fragment() {
 
 
             }
-            .setNeutralButton(getString(R.string.menu_cancel)) {dialog, which ->}
-            .setPositiveButton(getString(R.string.menu_accept)) {dialog, which ->
+            .setNeutralButton(getString(R.string.menu_cancel)) { dialog, which ->}
+            .setPositiveButton(getString(R.string.menu_accept)) { dialog, which ->
 
 
             }

@@ -1,4 +1,4 @@
-package com.example.proyecto_tfg
+package com.example.proyecto_tfg.fragments
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -10,9 +10,12 @@ import android.view.MotionEvent
 import android.view.GestureDetector
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.GestureDetector.SimpleOnGestureListener
-import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
+import com.example.proyecto_tfg.util.Adapter
+import com.example.proyecto_tfg.enums.StatusEnum
+import com.example.proyecto_tfg.MainActivity
+import com.example.proyecto_tfg.models.GameItem
+import com.example.proyecto_tfg.R
 
 
 //Fragments de libreria

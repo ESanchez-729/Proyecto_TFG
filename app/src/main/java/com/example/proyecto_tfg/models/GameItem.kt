@@ -1,4 +1,4 @@
-package com.example.proyecto_tfg
+package com.example.proyecto_tfg.models
 
 data class GameItem (
 
