@@ -16,7 +16,7 @@ import java.util.*
 /**
  * Class that manages CRUD operations within the supabase database.
  */
-class SupabaseDBManager (con : Context){
+class SupabaseDBManager (con : Context, token: String){
 
     //Internal phone database
     private val db: SQLiteDatabase
@@ -40,7 +40,7 @@ class SupabaseDBManager (con : Context){
         db.execSQL("CREATE TABLE IF NOT EXISTS CurrentToken(id NUMBER PRIMARY KEY, user_token VARCHAR, refresh_token VARCHAR);")
         postgrestClient = PostgrestDefaultClient(
             uri = URI(url),
-            headers = mapOf("Authorization" to "foobar")
+            headers = mapOf("Authorization" to token)
         )
         gson = Gson()
     }
@@ -106,8 +106,8 @@ class SupabaseDBManager (con : Context){
      * Method that adds a register to the current user library.
      */
     fun addGame(library: LibrarySB) {
-        val result = postgrestClient.from<Any>("library")
-            .insert(gson.toJson(library), upsert = true).execute()
+        val result = postgrestClient.from<LibrarySB>("library")
+            .insert(library, upsert = true).execute()
 
         if (result.status == 500) {
             Log.d(":::", "Juego ya esta en la base de datos: " + library.game_id)
@@ -176,6 +176,11 @@ class SupabaseDBManager (con : Context){
         }
 
         return null
+    }
+
+    fun addProfile(profile: ProfileSB) {
+        val response = postgrestClient.from<ProfileSB>("profile")
+            .insert(profile).execute()
     }
 
     /**

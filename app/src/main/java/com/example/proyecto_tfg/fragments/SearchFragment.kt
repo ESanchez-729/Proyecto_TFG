@@ -18,6 +18,7 @@ import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.R
+import com.example.proyecto_tfg.util.SBUserManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.MediaType.Companion.toMediaType
@@ -28,6 +29,10 @@ import java.io.IOException
 import java.text.DecimalFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import android.content.Intent
+import android.widget.Toast
+import com.example.proyecto_tfg.models.GameSB
+import com.example.proyecto_tfg.models.LibrarySB
 
 
 /**
@@ -42,12 +47,14 @@ class SearchFragment : Fragment() {
     var gestor: RecyclerView.LayoutManager? = null
     lateinit var client: OkHttpClient
     lateinit var gson : Gson
+    lateinit var usrManager: SBUserManager
     private val url = "https://api.igdb.com/v4/games/"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         client = OkHttpClient()
         gson = Gson()
+        usrManager = SBUserManager(activity as MainActivity)
     }
 
     override fun onCreateView(
@@ -179,11 +186,27 @@ class SearchFragment : Fragment() {
             )
         }
 
+        /**
+         * Change game status if it is already added.
+         */
+        val dbManager = usrManager.getDBManager()
+        var finalData = datos.toList()
+        if(dbManager != null) {
+            val userData = dbManager.getLibraryByUser(usrManager.getUserId()!!)
+            finalData =  datos.map { item ->
+                val temp = userData?.find { item2 -> item.id == item2.game_id }
+                if (temp != null) {
+                    item.status = temp.status.value
+                }
+                item
+            }
+        }
+
         reciclador!!.setHasFixedSize(true)
         gestor = LinearLayoutManager(activity as MainActivity)
 
         reciclador!!.layoutManager = gestor
-        adaptador = Adapter(datos)
+        adaptador = Adapter(finalData)
         reciclador!!.adapter = adaptador
 
         reciclador!!.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
@@ -196,7 +219,35 @@ class SearchFragment : Fragment() {
                     })
 
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                val child = rv.findChildViewUnder(e.x, e.y)
+                if (child != null && gestureDetector.onTouchEvent(e) && usrManager.loggedIn()) {
 
+                    val position = rv.getChildAdapterPosition(child)
+                    val dbManager = usrManager.getDBManager()
+
+                    val currentGame = finalData[position]
+                    val currentSBGame = GameSB(
+                        game_id = currentGame.id,
+                        name = currentGame.title,
+                        cover = currentGame.image,
+                        platforms = currentGame.platform,
+                        total_rating = currentGame.score)
+
+                    if (dbManager?.getGameById(currentSBGame.game_id) == null) {
+                        dbManager?.insertGameIntoDB(currentSBGame)
+                    }
+
+                    dbManager?.addGame(
+                        LibrarySB(
+                        user_id = usrManager.getUserId()!!,
+                        game_id = currentSBGame.game_id,
+                        status = StatusEnum.PLAYING,
+                        review = null,
+                        score = null,
+                        recommended = null
+                    ))
+
+                }
                 return false
             }
 

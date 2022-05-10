@@ -16,6 +16,7 @@ import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.R
+import com.example.proyecto_tfg.util.SBUserManager
 
 
 //Fragments de libreria
@@ -48,19 +49,24 @@ class LibraryFragment : Fragment() {
         reciclador = view.findViewById(R.id.library_list) as RecyclerView
 
         val datos: MutableList<GameItem> = ArrayList()
+        val userManager = SBUserManager(activity as MainActivity)
+        if(userManager.loggedIn()) {
 
-        for (i in 0..39) {
-
-            datos.add(
-                GameItem(
-                    id = 10,
-                    image = "https://img3.gelbooru.com//images/7b/ba/7bba6ee153847072402eb4f3878a5bdd.png",
-                    title = getString(R.string.search_menu),
-                    platform = getString(R.string.search_menu),
-                    status = StatusEnum.COMPLETED.value,
-                    score = 77,
+            val dbManager = userManager.getDBManager()
+            for (item in dbManager!!.getLibraryByUser(userManager.getUserId()!!) ?: listOf()) {
+                val game = dbManager.getGameById(item.game_id)
+                datos.add(
+                    GameItem(
+                        id = game!!.game_id.toInt(),
+                        image = game.cover,
+                        title = game.name,
+                        platform = game.platforms,
+                        status = item.status.value,
+                        score = game.total_rating.toInt(),
+                    )
                 )
-            )
+            }
+
         }
 
         reciclador!!.setHasFixedSize(true)

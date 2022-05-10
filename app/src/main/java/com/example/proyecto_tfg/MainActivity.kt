@@ -12,16 +12,17 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import android.content.pm.PackageManager
-
 import androidx.core.app.ActivityCompat
 
 import android.os.Build
 import android.util.Log
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
+import android.widget.Toast
 import com.example.proyecto_tfg.fragments.LibraryFragment
 import com.example.proyecto_tfg.fragments.ProfileFragment
 import com.example.proyecto_tfg.fragments.SearchFragment
+import com.example.proyecto_tfg.util.SBUserManager
 
 
 class MainActivity : AppCompatActivity() {
@@ -41,6 +42,13 @@ class MainActivity : AppCompatActivity() {
 
         val policy: ThreadPolicy = ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
+
+        val usrManager = SBUserManager(this)
+        usrManager.signUp("supatestmyvc@gmail.com", "potato200")
+        usrManager.refreshToken()
+        if (!usrManager.loggedIn()){
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
+        }
 
         binding.bottomNavigationView.setOnItemSelectedListener {
 
