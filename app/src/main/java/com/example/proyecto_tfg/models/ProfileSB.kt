@@ -8,7 +8,7 @@ data class ProfileSB (
     val avatar_url : String,
     val description : String?,
     val country : Number?,
-    val relatedAccounts : List<String>?,
+    val related_accounts : List<String>?,
     val friends : List<UUID>?
         )
 

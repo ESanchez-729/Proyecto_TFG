@@ -27,8 +27,8 @@ import com.example.proyecto_tfg.util.SBUserManager
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var binding:ActivityMainBinding
-    lateinit var client: OkHttpClient
+    private lateinit var binding:ActivityMainBinding
+    private lateinit var client: OkHttpClient
     private val url = "https://api.igdb.com/v4/"
     private val permissions = listOf(Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE)
 

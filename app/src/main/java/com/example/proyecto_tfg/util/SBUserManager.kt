@@ -201,9 +201,9 @@ class SBUserManager (con: Context){
                     username = "DefName",
                     avatar_url = "https://avatars.cloudflare.steamstatic.com/724bb41a602d6540c0cf83d52f503bb74262bb17_full.jpg",
                     description = "",
-                    country = null,
-                    relatedAccounts = null,
-                    friends = null
+                    country = 0,
+                    related_accounts = listOf(),
+                    friends = listOf()
                 ))
 
         }

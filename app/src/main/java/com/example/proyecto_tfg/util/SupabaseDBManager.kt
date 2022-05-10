@@ -3,6 +3,7 @@ package com.example.proyecto_tfg.util
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
+import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.models.GameSB
 import com.example.proyecto_tfg.models.LibrarySB
@@ -40,7 +41,11 @@ class SupabaseDBManager (con : Context, token: String){
         db.execSQL("CREATE TABLE IF NOT EXISTS CurrentToken(id NUMBER PRIMARY KEY, user_token VARCHAR, refresh_token VARCHAR);")
         postgrestClient = PostgrestDefaultClient(
             uri = URI(url),
-            headers = mapOf("Authorization" to token)
+            headers = mapOf(
+                "Authorization" to token,
+                "apikey" to context.getString(R.string.AnonKey_Supabase),
+                "Content-Type" to "application/json"
+            )
         )
         gson = Gson()
     }
@@ -179,8 +184,9 @@ class SupabaseDBManager (con : Context, token: String){
     }
 
     fun addProfile(profile: ProfileSB) {
-        val response = postgrestClient.from<ProfileSB>("profile")
-            .insert(profile).execute()
+        Log.d(":::", Gson().toJson(profile))
+        postgrestClient.from<Any>("profile")
+            .insert(Gson().toJson(profile)).execute()
     }
 
     /**
