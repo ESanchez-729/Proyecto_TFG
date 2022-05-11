@@ -79,9 +79,10 @@ class LibraryFragment : Fragment() {
         //Se configura el reciclerView y se añaden los datos.
         reciclador!!.setHasFixedSize(true)
         gestor = LinearLayoutManager(activity as MainActivity)
+        adaptador?.notifyDataSetChanged()
 
         reciclador!!.layoutManager = gestor
-        adaptador = Adapter(datos)
+        adaptador = Adapter(datos, activity as MainActivity)
         reciclador!!.adapter = adaptador
 
         //Método que añade funcionalidad a cada fila del recyclerView.

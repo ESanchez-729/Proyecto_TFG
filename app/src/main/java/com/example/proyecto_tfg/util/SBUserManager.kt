@@ -3,18 +3,13 @@ package com.example.proyecto_tfg.util
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
-import android.database.sqlite.SQLiteConstraintException
+import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
-import android.database.sqlite.SQLiteDatabase.deleteDatabase
 import android.database.sqlite.SQLiteDatabase.openOrCreateDatabase
 import android.util.Log
 import com.example.proyecto_tfg.R
-import com.example.proyecto_tfg.fragments.JsonTransformer
 import com.example.proyecto_tfg.models.ProfileSB
-import com.google.gson.reflect.TypeToken
-import io.supabase.gotrue.GoTrueClient
 import io.supabase.gotrue.GoTrueDefaultClient
-import io.supabase.gotrue.types.GoTrueVerifyType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -54,7 +49,6 @@ class SBUserManager (con: Context){
                 url = url,
                 headers = mapOf("Authorization" to getToken()!!, "apiKey" to context.getString(R.string.AnonKey_Supabase))
             )
-
         } else {
             goTrueClient = GoTrueDefaultClient(
                 url = url,
@@ -72,8 +66,24 @@ class SBUserManager (con: Context){
         val refreshTkn = getRefreshToken()
         if (refreshTkn != null) {
             val result = goTrueClient.refreshAccessToken(refreshTkn)
-            db.rawQuery("UPDATE CurrentToken SET('user_token' = ${result.accessToken}, 'refresh_token' = ${result.refreshToken} WHERE 'id' = 0)",
-                null)
+            val tokenData = ContentValues()
+            tokenData.put("user_token", result.accessToken)
+            tokenData.put("refresh_token", result.refreshToken)
+
+            db.beginTransaction();
+            val conf = db.update("CurrentToken", tokenData, "id = 0", null)
+            if(conf == 0) {
+                Log.d(":::", "FUCK YOU ANDROID (Refresh)")
+            }
+            db.setTransactionSuccessful();
+            db.endTransaction()
+
+            Log.d(":::", "Token refreshed successfully")
+
+            goTrueClient = GoTrueDefaultClient(
+                url = url,
+                headers = mapOf("Authorization" to result.accessToken, "apiKey" to context.getString(R.string.AnonKey_Supabase))
+            )
             return true
         }
 
@@ -104,9 +114,9 @@ class SBUserManager (con: Context){
         val cursor: Cursor = db.rawQuery("SELECT * FROM CurrentToken", null)
 
         if (cursor.moveToFirst()) {
-            cursor.moveToNext()
+            val result = cursor.getString(2)
             cursor.close()
-            return cursor.getString(2)
+            return result
 
         }
         cursor.close()
@@ -125,36 +135,51 @@ class SBUserManager (con: Context){
         db.rawQuery("UPDATE CurrentToken SET 'user_token' = '${result.accessToken}', 'refresh_token' = '${result.refreshToken}' WHERE 'id' = 0", null)
          */
         var tokenData = ContentValues()
-        tokenData.put("id", 0)
-        tokenData.put("user_token", result.accessToken)
-        tokenData.put("refresh_token", result.refreshToken)
 
         try {
-            db.beginTransaction();
-            val confirmation = db.insert("CurrentToken", null, tokenData)
-            db.setTransactionSuccessful();
-        } catch(e : SQLiteConstraintException) {
 
-            tokenData.clear()
-            tokenData.put("user_token", result.accessToken)
-            tokenData.put("refresh_token", result.refreshToken)
-            val conf = db.update("CurrentToken", tokenData, "id = ?", arrayOf("0"))
-            if(conf == 0) {
-                Log.d(":::", "FUCK YOU ANDROID")
+            if (getToken() == null) {
+
+                tokenData.put("id", 0)
+                tokenData.put("user_token", result.accessToken)
+                tokenData.put("refresh_token", result.refreshToken)
+
+                db.beginTransaction();
+                db.insert("CurrentToken", null, tokenData)
+                db.setTransactionSuccessful();
+
+            } else {
+
+                tokenData.put("user_token", result.accessToken)
+                tokenData.put("refresh_token", result.refreshToken)
+
+                db.beginTransaction();
+                val conf = db.update("CurrentToken", tokenData, "id = 0", null)
+                if(conf == 0) {
+                    Log.d(":::", "FUCK YOU ANDROID")
+                }
+                db.setTransactionSuccessful();
+
             }
-            db.setTransactionSuccessful();
 
+        } catch (e: SQLException) {
+            e.printStackTrace()
+            Log.d(":::ERR", "Transaction error")
         } finally {
             db.endTransaction();
         }
 
-        val tokenDB = getToken()
         Log.d(":::", result.accessToken + ", " + result.refreshToken)
-        Log.d(":::", tokenDB ?: "Null")
+        Log.d(":::", getToken() ?: "Null")
+        if (getToken() == result.accessToken) {
+            Log.d(":::", "Token actualizado correctamente")
+        }
         goTrueClient = GoTrueDefaultClient(
             url = url,
-            headers = mapOf("Authorization" to getToken()!!, "apiKey" to context.getString(R.string.AnonKey_Supabase))
+            headers = mapOf("Authorization" to getToken()!!,
+                "apiKey" to context.getString(R.string.AnonKey_Supabase))
         )
+        Log.d(":::", "Cliente actualizado correctamente")
     }
 
     /**
@@ -195,6 +220,7 @@ class SBUserManager (con: Context){
             val id = user.getString("id")
 
             signIn(email, password)
+
             getDBManager()!!.addProfile(
                 ProfileSB(
                     user_id = id,
@@ -202,8 +228,8 @@ class SBUserManager (con: Context){
                     avatar_url = "https://avatars.cloudflare.steamstatic.com/724bb41a602d6540c0cf83d52f503bb74262bb17_full.jpg",
                     description = "",
                     country = 0,
-                    related_accounts = listOf(),
-                    friends = listOf()
+                    related_accounts = emptyList(),
+                    friends = emptyList()
                 ))
 
         }
@@ -215,14 +241,24 @@ class SBUserManager (con: Context){
      */
     fun getUserId() : String? {
 
-        val token = getToken()
-        if (token != null) {
+        val token = getToken() ?: return null
 
-           val response = goTrueClient.getUser(token)
-            return response.id
+        val request = Request.Builder().url("$url/user").get()
+            .addHeader("apikey", context.getString(R.string.AnonKey_Supabase))
+            .addHeader("Authorization", "Bearer $token").build()
+
+        okHttp.newCall(request).execute().use { response ->
+
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+            val getResult : String = response.body?.string() ?: throw IOException("Data not found $response")
+
+            Log.d(":::(GetUser)", getResult)
+
+            val user = JSONObject(getResult)
+            Log.d(":::", user.toString())
+            return user.getString("id") ?: null
+
         }
-
-        return null
 
     }
 

@@ -11,7 +11,9 @@ import com.example.proyecto_tfg.models.ProfileSB
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.supabase.postgrest.PostgrestDefaultClient
+import org.json.JSONArray
 import java.net.URI
+import java.text.Normalizer
 import java.util.*
 
 /**
@@ -42,7 +44,7 @@ class SupabaseDBManager (con : Context, token: String){
         postgrestClient = PostgrestDefaultClient(
             uri = URI(url),
             headers = mapOf(
-                "Authorization" to token,
+                "Authorization" to "Bearer $token",
                 "apikey" to context.getString(R.string.AnonKey_Supabase),
                 "Content-Type" to "application/json"
             )
@@ -84,13 +86,19 @@ class SupabaseDBManager (con : Context, token: String){
      * Method that inserts a game into the game table.
      */
     fun insertGameIntoDB(game : GameSB) {
-        val result = postgrestClient.from<Any>("game")
-            .insert(gson.toJson(game), upsert = true).execute()
 
-        if (result.status == 500) {
-            Log.d(":::", "Error al insertar: " + game.game_id)
-        }
-        Log.d(":::", "Insert / Update Status: " + result.status)
+        Log.d(":::", Gson().toJson(game))
+        game.name = stripAccents(game.name)?: game.name
+//        try {
+            val result = postgrestClient.from<GameSB>("game")
+                .insert(game, true)
+
+            result.execute()
+//        } catch (e : Exception) {
+//            e.printStackTrace()
+//        }
+
+        //Log.d(":::", "Insert / Update Status: " + result.status)
     }
 
     /**
@@ -100,8 +108,15 @@ class SupabaseDBManager (con : Context, token: String){
         val response = postgrestClient.from<GameSB>("game")
             .select().eq("game_id", gameId).execute()
         if(response.status == 200) {
-            val itemType = object : TypeToken<List<GameSB>>() {}.type
-            return gson.fromJson(response.body, itemType)
+            val result = JSONArray(response.body)
+            if (result.length() == 0) {
+                return null
+            }
+
+            val item = result.getJSONObject(0)
+            Log.d(":::", item.toString())
+            return gson.fromJson(item.toString(), GameSB::class.java)
+
         }
 
         return null
@@ -184,9 +199,11 @@ class SupabaseDBManager (con : Context, token: String){
     }
 
     fun addProfile(profile: ProfileSB) {
+
         Log.d(":::", Gson().toJson(profile))
-        postgrestClient.from<Any>("profile")
-            .insert(Gson().toJson(profile)).execute()
+        val request = postgrestClient.from<ProfileSB>("profile")
+            .insert(profile).execute()
+
     }
 
     /**
@@ -196,6 +213,13 @@ class SupabaseDBManager (con : Context, token: String){
     fun getReviewsByUserId() {
         TODO()
         //Consultar reviews por user_id (tal vez)
+    }
+
+    private fun stripAccents(s: String): String? {
+        var s = s
+        s = Normalizer.normalize(s, Normalizer.Form.NFD)
+        s = s.replace("[\\p{InCombiningDiacriticalMarks}]".toRegex(), "")
+        return s
     }
 
 }

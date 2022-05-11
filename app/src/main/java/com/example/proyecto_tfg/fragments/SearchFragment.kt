@@ -205,19 +205,19 @@ class SearchFragment : Fragment() {
                     image = finalUrl,
                     title = item.name,
                     platform = finalPlatform,
-                    status = StatusEnum.PLAN_TO_PLAY.value,
+                    status = StatusEnum.NOT_ADDED.value,
                     score = item.total_rating!!.toInt()
                 )
             )
         }
 
         //Se ordena el array y se almacena en otra variable.
-        val sortedData : List<GameItem> = when(searchSort) {
+        val sortedData : MutableList<GameItem> = when(searchSort) {
 
-            getString(R.string.menu_option1) -> datos.sortedWith(compareBy<GameItem> {it.score})
-            getString(R.string.menu_option2) -> datos.toList()
-            getString(R.string.menu_option3) -> datos.sortedWith(compareBy<GameItem> {it.title})
-            else -> datos.toList()
+            getString(R.string.menu_option1) -> datos.sortedWith(compareBy<GameItem> {it.score}).toMutableList()
+            getString(R.string.menu_option2) -> datos
+            getString(R.string.menu_option3) -> datos.sortedWith(compareBy<GameItem> {it.title}).toMutableList()
+            else -> datos
 
         }
 
@@ -234,16 +234,17 @@ class SearchFragment : Fragment() {
                     item.status = temp.status.value
                 }
                 item
-            }
+            }.toMutableList()
         }
 
 
         //Se configura el reciclerView y se añaden los datos.
         reciclador!!.setHasFixedSize(true)
         gestor = LinearLayoutManager(activity as MainActivity)
+        adaptador?.notifyDataSetChanged()
 
         reciclador!!.layoutManager = gestor
-        adaptador = Adapter(finalData)
+        adaptador = Adapter(finalData, activity as MainActivity)
         reciclador!!.adapter = adaptador
 
         //Método que añade funcionalidad a cada fila del recyclerView.
@@ -257,35 +258,6 @@ class SearchFragment : Fragment() {
                     })
 
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
-                val child = rv.findChildViewUnder(e.x, e.y)
-                if (child != null && gestureDetector.onTouchEvent(e) && usrManager.loggedIn()) {
-
-                    val position = rv.getChildAdapterPosition(child)
-                    val dbManager = usrManager.getDBManager()
-
-                    val currentGame = finalData[position]
-                    val currentSBGame = GameSB(
-                        game_id = currentGame.id,
-                        name = currentGame.title,
-                        cover = currentGame.image,
-                        platforms = currentGame.platform,
-                        total_rating = currentGame.score)
-
-                    if (dbManager?.getGameById(currentSBGame.game_id) == null) {
-                        dbManager?.insertGameIntoDB(currentSBGame)
-                    }
-
-                    dbManager?.addGame(
-                        LibrarySB(
-                        user_id = usrManager.getUserId()!!,
-                        game_id = currentSBGame.game_id,
-                        status = StatusEnum.PLAYING,
-                        review = null,
-                        score = null,
-                        recommended = null
-                    ))
-
-                }
                 return false
             }
 

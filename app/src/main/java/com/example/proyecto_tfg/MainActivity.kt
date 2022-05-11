@@ -12,6 +12,8 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import android.content.pm.PackageManager
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import androidx.core.app.ActivityCompat
 
 import android.os.Build
@@ -50,10 +52,13 @@ class MainActivity : AppCompatActivity() {
         StrictMode.setThreadPolicy(policy)
 
         val usrManager = SBUserManager(this)
-        usrManager.signUp("supatestmyvc@gmail.com", "potato200")
-        usrManager.refreshToken()
+        //usrManager.signUp("supatestmyvc@gmail.com", "potato200")
+        usrManager.signIn("supatestmyvc@gmail.com", "potato200")
+
         if (!usrManager.loggedIn()){
             Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
+        } else {
+            usrManager.refreshToken()
         }
 
         //Se añade funcionalidad a los botones inferiores.
