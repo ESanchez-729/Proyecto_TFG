@@ -41,20 +41,30 @@ class Adapter(private val dataSet: List<GameItem>) :
     // Replace the contents of a view (invoked by the layout manager)
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
 
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
+        // Get element from your dataset at this position and replace the contents of the view with that element
+        //Se carga la imagen de la url con la libreria de picasso y se coloca en el imageView con un tamaño predefinido.
         Picasso.get().load(dataSet[position].image).resize(175,295).into(viewHolder.image)
+        //Se cargan el nombre, las plataformas y el estado del juego.
         viewHolder.title.text = dataSet[position].title
         viewHolder.platform.text = dataSet[position].platform
         viewHolder.status.text = dataSet[position].status
-        viewHolder.score.text = dataSet[position].score.toString()
-
-        when(dataSet[position].score) {
-
-            in 1..29 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_red)
-            in 30..60 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_yellow)
-            in 61..100 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_green)
+        //Si el juego no tiene estado se coloca N/A con un fondo blanco.
+        if (dataSet[position].score == -1 || dataSet[position].score == 100) {
+            viewHolder.score.text = "N/A"
+            viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_null)
         }
+
+        else {
+            //Se coloca la puntuacion y un color de fondo según esta.
+            viewHolder.score.text = dataSet[position].score.toString()
+            when(dataSet[position].score) {
+
+                in 1..29 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_red)
+                in 30..60 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_yellow)
+                in 61..100 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_green)
+            }
+        }
+
     }
 
     // Return the size of your dataset (invoked by the layout manager)

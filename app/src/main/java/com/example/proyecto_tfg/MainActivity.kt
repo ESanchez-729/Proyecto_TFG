@@ -27,19 +27,25 @@ import com.example.proyecto_tfg.util.SBUserManager
 
 class MainActivity : AppCompatActivity() {
 
+    //Binding del ActivityMain
     private lateinit var binding:ActivityMainBinding
+    //Cliente para las peticiones
     private lateinit var client: OkHttpClient
+    //Url para realizar las peticiones
     private val url = "https://api.igdb.com/v4/"
+    //Permisos a pedir.
     private val permissions = listOf(Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE)
 
+    //Método que se ejecuta al crearse el activity.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //Binding del ActivityMain
+        //Se inicializa el binding del ActivityMain
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        //Estas dos lineas son para evitar un error.
         val policy: ThreadPolicy = ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
 
@@ -50,6 +56,7 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
         }
 
+        //Se añade funcionalidad a los botones inferiores.
         binding.bottomNavigationView.setOnItemSelectedListener {
 
             when (it.itemId) {
@@ -64,6 +71,7 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+        //Post de prueba
         binding.bottomNavigationView.selectedItemId = R.id.profile_button
         client = OkHttpClient()
 
@@ -76,6 +84,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    //Método que sustituye los fragments.
     private fun replaceFragment(fragment: Fragment) {
 
         val fragmentManager : FragmentManager = supportFragmentManager
@@ -85,6 +94,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    //Prueba de post
     fun pruebaPost() {
 
         val markdownMediaType = "text/x-markdown; charset=utf-8".toMediaType()
@@ -109,6 +119,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    //Método que comprueba los permisos.
     private fun comprobarPermisos(): Boolean {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && permissions != null) {

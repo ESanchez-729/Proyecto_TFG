@@ -27,14 +27,17 @@ import com.example.proyecto_tfg.util.SBUserManager
  */
 class LibraryFragment : Fragment() {
 
+    //Objetos para el recycler
     var reciclador: RecyclerView? = null
     var adaptador: RecyclerView.Adapter<*>? = null
     var gestor: RecyclerView.LayoutManager? = null
 
+    //Método que se ejecuta al crear el fragment.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
 
+    //Método que se ejecuta al crearse la vista.
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -43,11 +46,15 @@ class LibraryFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_library, container, false)
     }
 
+    //Método que se ejecuta cuando ya se ha creado la vista.
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        //Se inicializa la vista del recycler.
         reciclador = view.findViewById(R.id.library_list) as RecyclerView
 
+        //Se cargan los datos en el recyclerView.
+        //Array que llevará los datos.
         val datos: MutableList<GameItem> = ArrayList()
         val userManager = SBUserManager(activity as MainActivity)
         if(userManager.loggedIn()) {
@@ -69,6 +76,7 @@ class LibraryFragment : Fragment() {
 
         }
 
+        //Se configura el reciclerView y se añaden los datos.
         reciclador!!.setHasFixedSize(true)
         gestor = LinearLayoutManager(activity as MainActivity)
 
@@ -76,6 +84,7 @@ class LibraryFragment : Fragment() {
         adaptador = Adapter(datos)
         reciclador!!.adapter = adaptador
 
+        //Método que añade funcionalidad a cada fila del recyclerView.
         reciclador!!.addOnItemTouchListener(object : OnItemTouchListener {
             var gestureDetector =
                 GestureDetector(activity as MainActivity,
