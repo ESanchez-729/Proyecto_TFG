@@ -19,7 +19,7 @@ import com.example.proyecto_tfg.models.LibrarySB
 import com.squareup.picasso.Picasso
 
 
-class Adapter(private val dataSet: MutableList<GameItem>, private val context: Context) :
+class Adapter(private val dataSet: MutableList<GameItem>, private val context: Context, private val dissapearWhenDeleted : Boolean) :
     RecyclerView.Adapter<Adapter.ViewHolder>() {
 
     /**
@@ -59,6 +59,8 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
         viewHolder.platform.text = dataSet[position].platform
         viewHolder.status.text = dataSet[position].status
 
+        val currentId = dataSet[position].id
+
         //Si el juego no tiene estado se coloca N/A con un fondo blanco.
         if (dataSet[position].score == -1 || dataSet[position].score == 100) {
             viewHolder.score.text = "N/A"
@@ -81,9 +83,15 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
         })
 
         viewHolder.removeButton.setOnClickListener(View.OnClickListener {
-            removeRegister(position)
-            dataSet.removeAt(position)
-            notifyItemRemoved(position)
+            removeRegister(position, currentId)
+            if(dissapearWhenDeleted) {
+                dataSet.removeAt(position)
+                notifyItemRemoved(position)
+                notifyItemChanged(position)
+            } else {
+                dataSet[position].status = StatusEnum.NOT_ADDED.value
+                notifyItemChanged(position)
+            }
         })
 
     }
@@ -120,7 +128,7 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
         )
     }
 
-    private fun removeRegister(position : Int) {
+    private fun removeRegister(position : Int, id : Int) {
 
         val usrManager = SBUserManager(context)
         val dbManager = usrManager.getDBManager()
@@ -129,7 +137,7 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
         if (userId == null) {
             Toast.makeText(context, "Error al eliminar el registro.", Toast.LENGTH_LONG).show()
         } else {
-            dbManager?.removeGame(userId, dataSet[position].id)
+            dbManager?.removeGame(userId, id)
         }
 
     }

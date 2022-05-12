@@ -244,7 +244,7 @@ class SearchFragment : Fragment() {
         adaptador?.notifyDataSetChanged()
 
         reciclador!!.layoutManager = gestor
-        adaptador = Adapter(finalData, activity as MainActivity)
+        adaptador = Adapter(finalData, activity as MainActivity, false)
         reciclador!!.adapter = adaptador
 
         //Método que añade funcionalidad a cada fila del recyclerView.

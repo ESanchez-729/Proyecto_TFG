@@ -82,7 +82,7 @@ class LibraryFragment : Fragment() {
         adaptador?.notifyDataSetChanged()
 
         reciclador!!.layoutManager = gestor
-        adaptador = Adapter(datos, activity as MainActivity)
+        adaptador = Adapter(datos, activity as MainActivity, true)
         reciclador!!.adapter = adaptador
 
         //Método que añade funcionalidad a cada fila del recyclerView.
