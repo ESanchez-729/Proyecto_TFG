@@ -17,6 +17,10 @@ import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.models.GameSB
 import com.example.proyecto_tfg.models.LibrarySB
 import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class Adapter(private val dataSet: MutableList<GameItem>, private val context: Context, private val dissapearWhenDeleted : Boolean) :
@@ -77,20 +81,41 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
         }
 
         viewHolder.addButton.setOnClickListener(View.OnClickListener {
-            addRegister(position)
-            dataSet[position].status = StatusEnum.PLAYING.value
-            notifyItemChanged(position)
+
+            viewHolder.addButton.isEnabled = false
+            if(dataSet[position].status == StatusEnum.NOT_ADDED.value) {
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    addRegister(position)
+                    dataSet[position].status = StatusEnum.PLAYING.value
+                    withContext(Dispatchers.Main){
+                        viewHolder.removeButton.isEnabled = true
+                        notifyItemChanged(position)
+                    }
+                }
+            }
         })
 
         viewHolder.removeButton.setOnClickListener(View.OnClickListener {
-            removeRegister(position, currentId)
-            if(dissapearWhenDeleted) {
-                dataSet.removeAt(position)
-                notifyItemRemoved(position)
-                notifyItemChanged(position)
-            } else {
-                dataSet[position].status = StatusEnum.NOT_ADDED.value
-                notifyItemChanged(position)
+            viewHolder.removeButton.isEnabled = false
+            if(dataSet[position].status != StatusEnum.NOT_ADDED.value) {
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    removeRegister(position, currentId)
+                    if(dissapearWhenDeleted) {
+                        dataSet.removeAt(position)
+                        withContext(Dispatchers.Main){
+                            notifyItemRemoved(position)
+                            notifyItemChanged(position)
+                        }
+                    } else {
+                        dataSet[position].status = StatusEnum.NOT_ADDED.value
+                        withContext(Dispatchers.Main){
+                            viewHolder.addButton.isEnabled = true
+                            notifyItemChanged(position)
+                        }
+                    }
+                }
             }
         })
 

@@ -1,5 +1,6 @@
 package com.example.proyecto_tfg.fragments
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.SearchManager
 import android.content.Context
@@ -32,6 +33,7 @@ import android.content.Intent
 import android.widget.Toast
 import com.example.proyecto_tfg.models.GameSB
 import com.example.proyecto_tfg.models.LibrarySB
+import kotlinx.coroutines.*
 
 /**
  * A simple [Fragment] subclass.
@@ -100,6 +102,7 @@ class SearchFragment : Fragment() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 
             //Para realizar la búsqueda.
+            @SuppressLint("NotifyDataSetChanged")
             override fun onQueryTextSubmit(query: String?): Boolean {
 
                 //Se inicializa la variable que almacenara el parámetro de búsqueda.
@@ -107,10 +110,16 @@ class SearchFragment : Fragment() {
                 //Se almacena el valor de la query y se desselecciona
                 if(query != null) {search = query}
                 searchView.clearFocus()
-                //Se hace la consulta y se sacan los datos.
-                val data : List<JsonTransformer> = getData(search)
-                //Se cargan los datos en el recyclerView.
-                showData(data)
+                var data : List<JsonTransformer> = listOf()
+                CoroutineScope(Dispatchers.IO).launch {
+                    //Se hace la consulta y se sacan los datos.
+                    data = getData(search)
+                    withContext(Dispatchers.Main) {
+                        //Se cargan los datos en el recyclerView.
+                        showData(data)
+                        adaptador?.notifyDataSetChanged()
+                    }
+                }
                 //Se limpia la caja de búsqueda.
                 searchView.setQuery("", false)
                 searchItem.collapseActionView()
@@ -229,7 +238,7 @@ class SearchFragment : Fragment() {
         if(dbManager != null) {
             val userData = dbManager.getLibraryByUser(usrManager.getUserId()!!)
             finalData =  datos.map { item ->
-                val temp = userData?.find { item2 -> item.id == item2.game_id }
+                val temp = userData?.find { item2 -> item.id == item2.game_id.toInt() }
                 if (temp != null) {
                     item.status = temp.status.value
                 }
@@ -241,7 +250,6 @@ class SearchFragment : Fragment() {
         //Se configura el reciclerView y se añaden los datos.
         reciclador!!.setHasFixedSize(true)
         gestor = LinearLayoutManager(activity as MainActivity)
-        adaptador?.notifyDataSetChanged()
 
         reciclador!!.layoutManager = gestor
         adaptador = Adapter(finalData, activity as MainActivity, false)

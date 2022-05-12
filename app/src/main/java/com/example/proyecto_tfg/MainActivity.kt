@@ -37,6 +37,8 @@ class MainActivity : AppCompatActivity() {
     private val url = "https://api.igdb.com/v4/"
     //Permisos a pedir.
     private val permissions = listOf(Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE)
+    //Fragmento actual
+    private var currentFragment: Int = -1
 
     //Método que se ejecuta al crearse el activity.
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,9 +68,24 @@ class MainActivity : AppCompatActivity() {
 
             when (it.itemId) {
 
-                R.id.search_button -> replaceFragment(SearchFragment())
-                R.id.profile_button -> replaceFragment(ProfileFragment())
-                R.id.library_button -> replaceFragment(LibraryFragment())
+                R.id.search_button -> {
+                    if (currentFragment != R.id.search_button) {
+                        replaceFragment(SearchFragment())
+                        currentFragment = R.id.search_button
+                    }
+                }
+                R.id.profile_button -> {
+                    if (currentFragment != R.id.profile_button) {
+                        replaceFragment(ProfileFragment())
+                        currentFragment = R.id.profile_button
+                    }
+                }
+                R.id.library_button -> {
+                if (currentFragment != R.id.library_button) {
+                    replaceFragment(LibraryFragment())
+                    currentFragment = R.id.library_button
+                }
+            }
 
             }
 
