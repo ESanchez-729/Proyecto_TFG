@@ -6,75 +6,77 @@
     android:layout_height="match_parent"
     tools:context=".ProfileFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:card_view="http://schemas.android.com/tools"
-        xmlns:tools="http://schemas.android.com/tools"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/blue_background"
         tools:context=".ProfileFragment">
 
-        <com.makeramen.roundedimageview.RoundedImageView
-            android:id="@+id/profile_pic"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginStart="36dp"
-            android:layout_marginTop="28dp"
-            android:layout_marginEnd="255dp"
-            android:src="@drawable/beluga"
+        <androidx.cardview.widget.CardView
+            android:id="@+id/profileCardView"
+            android:layout_width="match_parent"
+            android:layout_height="230dp"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="10dp"
+            app:cardUseCompatPadding="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:riv_oval="true" />
+            app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/username_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="25dp"
-            android:layout_marginTop="37dp"
-            android:text="Beluga1442"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toEndOf="@+id/profile_pic"
-            app:layout_constraintTop_toTopOf="parent" />
+            <com.makeramen.roundedimageview.RoundedImageView
+                android:id="@+id/profile_pic"
+                android:layout_width="80dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="-50dp"
+                android:src="@drawable/beluga"
+                app:riv_border_color="@color/blue_background"
+                app:riv_border_width="5dp"
+                app:riv_oval="true" />
 
-        <TextView
-            android:id="@+id/userLocation_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="25dp"
-            android:layout_marginTop="5dp"
-            android:text="Germany"
-            android:textSize="17sp"
-            app:layout_constraintStart_toEndOf="@+id/profile_pic"
-            app:layout_constraintTop_toBottomOf="@+id/username_text" />
+            <TextView
+                android:id="@+id/username_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Beluga1442"
+                android:layout_marginTop="5dp"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/userDescription_text"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="25dp"
-            android:layout_marginTop="5dp"
-            android:justificationMode="inter_word"
-            android:text="@string/pruebaxD"
-            android:textSize="12sp"
-            app:layout_constraintStart_toEndOf="@+id/profile_pic"
-            app:layout_constraintTop_toBottomOf="@+id/userLocation_text" />
+            <TextView
+                android:id="@+id/userLocation_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="35dp"
+                android:text="Germany"
+                android:textSize="17sp" />
+
+            <TextView
+                android:id="@+id/userDescription_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="150dp"
+                android:textAlignment="center"
+                android:text="@string/pruebaxD"
+                android:textSize="12sp" />
+
+        </androidx.cardview.widget.CardView>
+
 
         <androidx.cardview.widget.CardView
             android:id="@+id/games_dashboard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
-            app:cardCornerRadius="15dp"
+            android:layout_marginTop="10dp"
+            app:cardCornerRadius="10dp"
             app:cardElevation="10dp"
             app:cardUseCompatPadding="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/profile_pic"
-            card_view:cardCornerRadius="5dp">
+            app:layout_constraintTop_toBottomOf="@+id/profileCardView">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -83,8 +85,7 @@
                 android:layout_marginTop="10dp"
                 android:text="@string/library_status"
                 android:textSize="17sp"
-                android:textStyle="bold">
-            </TextView>
+                android:textStyle="bold" />
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/completedGamesCard"
@@ -116,9 +117,7 @@
                     android:layout_marginTop="30dp"
                     android:paddingTop="10dp"
                     android:paddingBottom="30dp"
-                    android:src="@drawable/ic_profile">
-
-                </ImageView>
+                    android:src="@drawable/ic_profile" />
 
             </androidx.cardview.widget.CardView>
 
@@ -150,9 +149,7 @@
                     android:layout_marginTop="30dp"
                     android:paddingTop="10dp"
                     android:paddingBottom="30dp"
-                    android:src="@drawable/ic_profile">
-
-                </ImageView>
+                    android:src="@drawable/ic_profile" />
 
             </androidx.cardview.widget.CardView>
 
@@ -175,9 +172,7 @@
                     android:text="@string/dropped_status"
                     android:textAlignment="center"
                     android:textColor="@color/white"
-                    android:textSize="16sp">
-
-                </TextView>
+                    android:textSize="16sp" />
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -186,9 +181,7 @@
                     android:layout_marginTop="30dp"
                     android:paddingTop="10dp"
                     android:paddingBottom="30dp"
-                    android:src="@drawable/ic_profile">
-
-                </ImageView>
+                    android:src="@drawable/ic_profile" />
 
             </androidx.cardview.widget.CardView>
 
@@ -198,7 +191,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:layout_marginTop="180dp"
-                android:layout_marginRight="50dp"
+                android:layout_marginEnd="50dp"
                 android:layout_marginBottom="20dp"
                 android:padding="10dp"
                 app:cardBackgroundColor="@color/yellow_status"
@@ -221,9 +214,7 @@
                     android:layout_marginTop="30dp"
                     android:paddingTop="10dp"
                     android:paddingBottom="30dp"
-                    android:src="@drawable/ic_profile">
-
-                </ImageView>
+                    android:src="@drawable/ic_profile" />
 
             </androidx.cardview.widget.CardView>
 
@@ -255,25 +246,24 @@
                     android:layout_marginTop="30dp"
                     android:paddingTop="10dp"
                     android:paddingBottom="30dp"
-                    android:src="@drawable/ic_profile">
-
-                </ImageView>
+                    android:src="@drawable/ic_profile" />
 
             </androidx.cardview.widget.CardView>
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            app:cardCornerRadius="15dp"
+            android:layout_marginTop="10dp"
+            app:cardCornerRadius="10dp"
             app:cardElevation="10dp"
             app:cardUseCompatPadding="true"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/games_dashboard"
-            card_view:cardCornerRadius="5dp">
+            >
 
             <TextView
                 android:layout_width="wrap_content"
@@ -316,22 +306,21 @@
                     android:layout_marginTop="30dp"
                     android:paddingTop="10dp"
                     android:paddingBottom="30dp"
-                    android:src="@drawable/ic_profile">
-
-                </ImageView>
+                    android:src="@drawable/ic_profile" />
 
             </androidx.cardview.widget.CardView>
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/friendsCard"
                 android:layout_width="125dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:layout_marginTop="60dp"
                 android:layout_marginEnd="50dp"
+                android:layout_marginBottom="20dp"
                 android:padding="10dp"
                 app:cardBackgroundColor="@color/green_status"
                 app:cardCornerRadius="15dp"
-                android:layout_marginBottom="20dp"
                 app:cardElevation="10dp">
 
                 <TextView
