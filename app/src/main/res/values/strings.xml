@@ -22,4 +22,16 @@
     <string name="filter_option8">Status: Not Added</string>
     <string name="add_button">Add</string>
     <string name="remove_button">Remove</string>
+    <string name="login_button">Log-in</string>
+    <string name="pruebaxD">Albion Online es un mmorpg no lineal, en el que escribes tu propia historia</string>
+    <string name="completed_status">Completed</string>
+    <string name="playing_status">Playing</string>
+    <string name="dropped_status">Dropped</string>
+    <string name="on_hold_status">On-Hold</string>
+    <string name="plan_to_play_status">Plan to play</string>
+    <string name="not_added_status">Not added</string>
+    <string name="library_status">Library Status</string>
+    <string name="social">Social</string>
+    <string name="review_card">Reviews</string>
+    <string name="friends_card">Friends</string>
 </resources>
