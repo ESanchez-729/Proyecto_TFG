@@ -9,8 +9,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
 import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.R
+import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.models.ProfileSB
 import com.example.proyecto_tfg.util.SBUserManager
@@ -62,11 +65,11 @@ class ProfileFragment : Fragment() {
         val userDescription : TextView = view.findViewById(R.id.userDescription_text)
 
         val libraryList : HashMap<String, CardView> = hashMapOf()
-        libraryList["completed"] = view.findViewById(R.id.completedGamesCard)
-        libraryList["playing"] = view.findViewById(R.id.playingGamesCard)
-        libraryList["dropped"] = view.findViewById(R.id.droppedGamesCard)
-        libraryList["onHold"] = view.findViewById(R.id.onHoldGamesCard)
-        libraryList["planToPlay"] = view.findViewById(R.id.planToPlayGamesCard)
+        libraryList[StatusEnum.COMPLETED.value] = view.findViewById(R.id.completedGamesCard)
+        libraryList[StatusEnum.PLAYING.value] = view.findViewById(R.id.playingGamesCard)
+        libraryList[StatusEnum.DROPPED.value] = view.findViewById(R.id.droppedGamesCard)
+        libraryList[StatusEnum.ON_HOLD.value] = view.findViewById(R.id.onHoldGamesCard)
+        libraryList[StatusEnum.PLAN_TO_PLAY.value] = view.findViewById(R.id.planToPlayGamesCard)
 
         val socialReviews : CardView = view.findViewById(R.id.reviewsCard)
         val socialFriends : CardView = view.findViewById(R.id.friendsCard)
@@ -91,6 +94,7 @@ class ProfileFragment : Fragment() {
 
                         item.value.setOnClickListener(View.OnClickListener {
                             Toast.makeText(context, item.key, Toast.LENGTH_SHORT).show()
+                            replaceFragment(LibraryFragment.newInstance(item.key, currentProfile.user_id))
                         })
 
                     }
@@ -124,6 +128,15 @@ class ProfileFragment : Fragment() {
 
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun replaceFragment(fragment: Fragment) {
+
+        val fragmentManager : FragmentManager = (activity as MainActivity).supportFragmentManager
+        val fragmentTransaction : FragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.main_frame_layout, fragment)
+        fragmentTransaction.commit()
+
     }
 
     companion object {

@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     //Permisos a pedir.
     private val permissions = listOf(Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE)
     //Fragmento actual
-    private var currentFragment: Int = -1
+    var currentFragment: Int = -1
 
     //Método que se ejecuta al crearse el activity.
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.library_button -> {
                 if (currentFragment != R.id.library_button) {
-                    replaceFragment(LibraryFragment())
+                    replaceFragment(LibraryFragment.newInstance("", usrManager.getUserId()!!))
                     currentFragment = R.id.library_button
                 }
             }

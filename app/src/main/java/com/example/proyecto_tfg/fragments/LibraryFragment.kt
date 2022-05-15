@@ -2,6 +2,7 @@ package com.example.proyecto_tfg.fragments
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -16,14 +17,13 @@ import com.example.proyecto_tfg.util.Adapter
 import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.R
+import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.util.SBUserManager
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 
 //Fragments de libreria
+
 /**
  * A simple [Fragment] subclass.
  * Use the [LibraryFragment.newInstance] factory method to
@@ -31,6 +31,8 @@ import kotlinx.coroutines.withContext
  */
 class LibraryFragment : Fragment() {
 
+    private var searchFilter: String? = null
+    private var otherUserId: String? = null
     //Objetos para el recycler
     var reciclador: RecyclerView? = null
     private var adaptador: RecyclerView.Adapter<*>? = null
@@ -39,6 +41,10 @@ class LibraryFragment : Fragment() {
     //Método que se ejecuta al crear el fragment.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        arguments?.let {
+            searchFilter = it.getString("search_filter")
+            otherUserId = it.getString("other_user_id")
+        }
     }
 
     //Método que se ejecuta al crearse la vista.
@@ -69,7 +75,12 @@ class LibraryFragment : Fragment() {
 
             if(userManager.loggedIn()) {
                 val dbManager = userManager.getDBManager()
-                for (item in dbManager!!.getLibraryByUser(userManager.getUserId()!!) ?: listOf()) {
+                var currentUser = userManager.getUserId()!!
+                if(otherUserId != "") {currentUser = otherUserId!!}
+                Log.d(":::Filter(status)", searchFilter.toString())
+                Log.d(":::Filter(user)", otherUserId.toString())
+                val currentStatus =  StatusEnum.values().find { it.value == searchFilter }
+                for (item in dbManager!!.getLibraryByUserFilteredByStatus(currentUser, currentStatus) ?: listOf()) {
                     val game = dbManager.getGameById(item.game_id)
                     datos.add(
                         GameItem(
@@ -83,6 +94,7 @@ class LibraryFragment : Fragment() {
                     )
                 }
             }
+
             withContext(Dispatchers.Main) {
                 //Se configura el reciclerView y se añaden los datos.
                 reciclador!!.setHasFixedSize(true)
@@ -110,9 +122,27 @@ class LibraryFragment : Fragment() {
                     override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
                     override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
                 })
-
+                context.currentFragment = -1
                 adaptador?.notifyDataSetChanged()
             }
+
+
         }
+
     }
+
+    companion object {
+
+        @JvmStatic
+        fun newInstance(statusFilter: String, usrID: String) : LibraryFragment {
+            var lf = LibraryFragment()
+            val args = Bundle()
+            args.putString("search_filter", statusFilter)
+            args.putString("other_user_id", usrID)
+           lf.arguments = args
+            return lf
+        }
+
+    }
+
 }

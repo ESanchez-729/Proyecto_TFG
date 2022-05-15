@@ -29,10 +29,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
-import android.content.Intent
-import android.widget.Toast
-import com.example.proyecto_tfg.models.GameSB
-import com.example.proyecto_tfg.models.LibrarySB
 import kotlinx.coroutines.*
 
 /**

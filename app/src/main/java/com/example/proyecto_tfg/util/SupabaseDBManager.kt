@@ -173,8 +173,10 @@ class SupabaseDBManager (con : Context, token: String){
      */
     fun getLibraryByUser(userid : String) : List<LibrarySB>?{
         val userID = UUID.fromString(userid)
-        val response = postgrestClient.from<LibrarySB>("library")
-            .select().eq("user_id", userID).execute()
+
+        var response = postgrestClient.from<LibrarySB>("library")
+                .select().eq("user_id", userID).execute()
+
         if(response.status == 200) {
             val itemType = object : TypeToken<List<LibrarySB>>() {}.type
             return gson.fromJson(response.body, itemType)
@@ -186,13 +188,22 @@ class SupabaseDBManager (con : Context, token: String){
     /**
      * Method that returns the library registers of an specific user and with an specific status.
      */
-    fun getLibraryByUserFilteredByStatus(userid: String, status : StatusEnum) : List<LibrarySB>? {
+    fun getLibraryByUserFilteredByStatus(userid: String, status : StatusEnum?) : List<LibrarySB>? {
         val userID = UUID.fromString(userid)
-        val response = postgrestClient.from<LibrarySB>("library")
-            .select().eq("user_id", userID).eq("status", status.value).execute()
-        if(response.status == 200) {
-            val itemType = object : TypeToken<List<LibrarySB>>() {}.type
-            return gson.fromJson(response.body, itemType)
+        if(status == null) {
+            val response = postgrestClient.from<LibrarySB>("library")
+                .select().eq("user_id", userID).execute()
+            if(response.status == 200) {
+                val itemType = object : TypeToken<List<LibrarySB>>() {}.type
+                return gson.fromJson(response.body, itemType)
+            }
+        } else {
+            val response = postgrestClient.from<LibrarySB>("library")
+                .select().eq("user_id", userID).like("status", status.toString()).execute()
+            if(response.status == 200) {
+                val itemType = object : TypeToken<List<LibrarySB>>() {}.type
+                return gson.fromJson(response.body, itemType)
+            }
         }
 
         return null
