@@ -94,7 +94,7 @@ class SearchFragment : Fragment() {
         inflater.inflate(R.menu.search_options, menu)
 
         val manager = activity?.getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        val searchItem = menu?.findItem(R.id.search_bar)
+        val searchItem = menu.findItem(R.id.search_bar)
         val searchView = searchItem.actionView as SearchView
 
         searchView.setSearchableInfo(manager.getSearchableInfo(requireActivity().componentName))
@@ -116,7 +116,9 @@ class SearchFragment : Fragment() {
                     data = getData(search)
                     withContext(Dispatchers.Main) {
                         //Se cargan los datos en el recyclerView.
-                        showData(data)
+                        try {
+                            showData(data)
+                        } catch (e: IllegalStateException) {Log.d(":::", "chill")}
                         adaptador?.notifyDataSetChanged()
                     }
                 }

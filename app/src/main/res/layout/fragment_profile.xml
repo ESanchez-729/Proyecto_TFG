@@ -39,7 +39,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Beluga1442"
+                android:text=""
                 android:layout_marginTop="5dp"
                 android:textSize="20sp"
                 android:textStyle="bold" />
@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="35dp"
-                android:text="Germany"
+                android:text=""
                 android:textSize="17sp" />
 
             <TextView
@@ -59,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="150dp"
                 android:textAlignment="center"
-                android:text="@string/pruebaxD"
+                android:text=""
                 android:textSize="12sp" />
 
         </androidx.cardview.widget.CardView>

@@ -12,6 +12,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.supabase.postgrest.PostgrestDefaultClient
 import org.json.JSONArray
+import org.json.JSONObject
 import java.net.URI
 import java.text.Normalizer
 import java.util.*
@@ -55,14 +56,14 @@ class SupabaseDBManager (con : Context, token: String){
     /**
      * Method that receives an user id and returns its data.
      */
-    fun getUserDataById(userid : String) : List<ProfileSB>? {
+    fun getUserDataById(userid : String) : ProfileSB? {
 
         val userID = UUID.fromString(userid)
         val response = postgrestClient.from<ProfileSB>("profile")
             .select().eq("user_id", userID).execute()
         if(response.status == 200) {
-            val itemType = object : TypeToken<List<ProfileSB>>() {}.type
-            return gson.fromJson(response.body, itemType)
+            val result = JSONArray(response.body).getJSONObject(0)
+            return gson.fromJson(result.toString(), ProfileSB::class.java)
         }
 
         return null
@@ -89,16 +90,15 @@ class SupabaseDBManager (con : Context, token: String){
 
         Log.d(":::", Gson().toJson(game))
         game.name = stripAccents(game.name)?: game.name
-//        try {
-            val result = postgrestClient.from<GameSB>("game")
-                .insert(game, true)
 
+        val result = postgrestClient.from<GameSB>("game")
+            .insert(game, true)
+
+        try{
             result.execute()
-//        } catch (e : Exception) {
-//            e.printStackTrace()
-//        }
-
-        //Log.d(":::", "Insert / Update Status: " + result.status)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     /**
@@ -198,12 +198,27 @@ class SupabaseDBManager (con : Context, token: String){
         return null
     }
 
+    /**
+     * Method that adds a profile to the database.
+     */
     fun addProfile(profile: ProfileSB) {
 
         Log.d(":::", Gson().toJson(profile))
         val request = postgrestClient.from<ProfileSB>("profile")
             .insert(profile).execute()
 
+    }
+
+    /**
+     * Function that gets a country by id.
+     */
+    fun getCountryNameById(id : Int) : String {
+        val response = postgrestClient.from<String>("countries")
+            .select().eq("id", id).execute()
+
+        Log.d(":::", response.toString())
+        val objectResult = JSONArray(response.body).getJSONObject(0)
+        return objectResult.get("name").toString()
     }
 
     /**
@@ -215,11 +230,17 @@ class SupabaseDBManager (con : Context, token: String){
         //Consultar reviews por user_id (tal vez)
     }
 
-    private fun stripAccents(s: String): String? {
-        var s = s
-        s = Normalizer.normalize(s, Normalizer.Form.NFD)
-        s = s.replace("[\\p{InCombiningDiacriticalMarks}]".toRegex(), "")
-        return s
+    private fun stripAccents(s: String): String {
+        var current = s
+        current = Normalizer.normalize(s, Normalizer.Form.NFD)
+        current = current.replace("[\\p{InCombiningDiacriticalMarks}]".toRegex(), "")
+
+        //current = current.replace('-', ' ')
+        //current = current.replace('\\', ' ')
+        //current = current.replace('\'', ' ')
+        //current = current.replace(':', ' ')
+
+        return current
     }
 
 }

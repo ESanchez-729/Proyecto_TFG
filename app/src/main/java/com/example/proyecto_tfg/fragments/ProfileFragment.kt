@@ -6,7 +6,20 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
+import android.widget.Toast
+import androidx.cardview.widget.CardView
+import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.R
+import com.example.proyecto_tfg.models.GameItem
+import com.example.proyecto_tfg.models.ProfileSB
+import com.example.proyecto_tfg.util.SBUserManager
+import com.makeramen.roundedimageview.RoundedImageView
+import com.squareup.picasso.Picasso
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -42,6 +55,57 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
+
+        val userImage : RoundedImageView = view.findViewById(R.id.profile_pic)
+        val userName : TextView = view.findViewById(R.id.username_text)
+        val userLocation : TextView = view.findViewById(R.id.userLocation_text)
+        val userDescription : TextView = view.findViewById(R.id.userDescription_text)
+
+        val libraryList : HashMap<String, CardView> = hashMapOf()
+        libraryList["completed"] = view.findViewById(R.id.completedGamesCard)
+        libraryList["playing"] = view.findViewById(R.id.playingGamesCard)
+        libraryList["dropped"] = view.findViewById(R.id.droppedGamesCard)
+        libraryList["onHold"] = view.findViewById(R.id.onHoldGamesCard)
+        libraryList["planToPlay"] = view.findViewById(R.id.planToPlayGamesCard)
+
+        val socialReviews : CardView = view.findViewById(R.id.reviewsCard)
+        val socialFriends : CardView = view.findViewById(R.id.friendsCard)
+
+        var currentProfile: ProfileSB
+        val context = activity as MainActivity
+
+        CoroutineScope(Dispatchers.IO).launch {
+
+            val userManager = SBUserManager(context)
+            if(userManager.loggedIn()) {
+                val dbManager = userManager.getDBManager()
+                currentProfile = dbManager?.getUserDataById(userManager.getUserId()!!)!!
+
+                withContext(Dispatchers.Main) {
+                    Picasso.get().load(currentProfile.avatar_url).resize(80, 80).into(userImage)
+                    userName.text = currentProfile.username
+                    userLocation.text = dbManager.getCountryNameById(currentProfile.country!!.toInt())
+                    userDescription.text = currentProfile.description
+
+                    for (item in libraryList){
+
+                        item.value.setOnClickListener(View.OnClickListener {
+                            Toast.makeText(context, item.key, Toast.LENGTH_SHORT).show()
+                        })
+
+                    }
+
+                    socialReviews.setOnClickListener(View.OnClickListener {
+                        Toast.makeText(context, "Reviews", Toast.LENGTH_SHORT).show()
+                    })
+
+                    socialFriends.setOnClickListener(View.OnClickListener {
+                        Toast.makeText(context, "Friends", Toast.LENGTH_SHORT).show()
+                    })
+
+                }
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {

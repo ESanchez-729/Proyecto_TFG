@@ -21,6 +21,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.lang.IndexOutOfBoundsException
 
 
 class Adapter(private val dataSet: MutableList<GameItem>, private val context: Context, private val dissapearWhenDeleted : Boolean) :
@@ -98,25 +99,29 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
 
         viewHolder.removeButton.setOnClickListener(View.OnClickListener {
             viewHolder.removeButton.isEnabled = false
-            if(dataSet[position].status != StatusEnum.NOT_ADDED.value) {
+                try {
+                    if(dataSet[position].status != StatusEnum.NOT_ADDED.value) {
 
-                CoroutineScope(Dispatchers.IO).launch {
-                    removeRegister(position, currentId)
-                    if(dissapearWhenDeleted) {
-                        dataSet.removeAt(position)
-                        withContext(Dispatchers.Main){
-                            notifyItemRemoved(position)
-                            notifyItemChanged(position)
-                        }
-                    } else {
-                        dataSet[position].status = StatusEnum.NOT_ADDED.value
-                        withContext(Dispatchers.Main){
-                            viewHolder.addButton.isEnabled = true
-                            notifyItemChanged(position)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            try {
+                                removeRegister(position, currentId)
+                                if(dissapearWhenDeleted) {
+                                    dataSet.removeAt(position)
+                                    withContext(Dispatchers.Main){
+                                        notifyItemRemoved(position)
+                                        notifyItemChanged(position)
+                                    }
+                                } else {
+                                    dataSet[position].status = StatusEnum.NOT_ADDED.value
+                                    withContext(Dispatchers.Main){
+                                        viewHolder.addButton.isEnabled = true
+                                        notifyItemChanged(position)
+                                    }
+                                }
+                            } catch (e: IndexOutOfBoundsException) {}
                         }
                     }
-                }
-            }
+                } catch (e: IndexOutOfBoundsException) {}
         })
 
     }
