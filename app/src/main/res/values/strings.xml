@@ -1,12 +1,14 @@
 <resources>
     <string name="app_name">My Videogame Collection</string>
+    <string name="registration_text">Account registration</string>
+    <string name="app_name_short">MyVC</string>
     <string name="profile_menu">Profile</string>
     <string name="search_menu">Search</string>
     <string name="library_menu">Library</string>
     <string name="score_field">Score: </string>
     <string name="no_Score">N/A</string>
-    <string name="sort_search">Sort by...</string>
-    <string name="filter_search">Filter by...</string>
+    <string name="sort_search">Sort by…</string>
+    <string name="filter_search">Filter by…</string>
     <string name="menu_option1">Score</string>
     <string name="menu_option2">Status</string>
     <string name="menu_option3">Name</string>
@@ -23,6 +25,9 @@
     <string name="add_button">Add</string>
     <string name="remove_button">Remove</string>
     <string name="login_button">Log-in</string>
+    <string name="login_button">Login</string>
+    <string name="register_button">Register</string>
+    <string name="pruebaxD">Albion Online es un mmorpg no lineal, en el que escribes tu propia historia</string>
     <string name="completed_status">Completed</string>
     <string name="playing_status">Playing</string>
     <string name="dropped_status">Dropped</string>
@@ -33,6 +38,9 @@
     <string name="social">Social</string>
     <string name="review_card">Reviews</string>
     <string name="friends_card">Friends</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="username_login">Username</string>
+    <string name="password_login">Password</string>
+    <string name="email">Email</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="create_account">Create account</string>
 </resources>
