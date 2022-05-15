@@ -24,7 +24,6 @@
     <string name="filter_option8">Status: Not Added</string>
     <string name="add_button">Add</string>
     <string name="remove_button">Remove</string>
-    <string name="login_button">Log-in</string>
     <string name="login_button">Login</string>
     <string name="register_button">Register</string>
     <string name="pruebaxD">Albion Online es un mmorpg no lineal, en el que escribes tu propia historia</string>
@@ -43,4 +42,10 @@
     <string name="email">Email</string>
     <string name="confirm_password">Confirm password</string>
     <string name="create_account">Create account</string>
+    <string name="err_invalid_credentials">Incorrect email or password</string>
+    <string name="err_short_pass">Password too short</string>
+    <string name="err_different_passwords">Passwords are not the same</string>
+    <string name="err_invalid_email">Email is not valid</string>
+    <string name="err_empty_fields">All the fields must be filled</string>
+    <string name="err_register">There was an error creating the account</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.example.proyecto_tfg
 
 import android.Manifest
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -12,15 +13,13 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import android.content.pm.PackageManager
-import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
 import androidx.core.app.ActivityCompat
-
 import android.os.Build
 import android.util.Log
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
 import android.widget.Toast
+import com.example.proyecto_tfg.activities.LoginActivity
 import com.example.proyecto_tfg.fragments.LibraryFragment
 import com.example.proyecto_tfg.fragments.ProfileFragment
 import com.example.proyecto_tfg.fragments.SearchFragment
@@ -55,10 +54,12 @@ class MainActivity : AppCompatActivity() {
 
         val usrManager = SBUserManager(this)
         //usrManager.signUp("supatestmyvc@gmail.com", "potato200")
-        usrManager.signIn("supatestmyvc@gmail.com", "potato200")
+        //usrManager.signIn("supatestmyvc@gmail.com", "potato200")
 
         if (!usrManager.loggedIn()){
             Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
         } else {
             usrManager.refreshToken()
         }
@@ -158,4 +159,20 @@ class MainActivity : AppCompatActivity() {
 
         return true
     }
+
+    override fun onResume() {
+        super.onResume()
+        val usrManager = SBUserManager(this)
+        //usrManager.signUp("supatestmyvc@gmail.com", "potato200")
+        //usrManager.signIn("supatestmyvc@gmail.com", "potato200")
+
+        if (!usrManager.loggedIn()){
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+        } else {
+            usrManager.refreshToken()
+        }
+    }
+
 }

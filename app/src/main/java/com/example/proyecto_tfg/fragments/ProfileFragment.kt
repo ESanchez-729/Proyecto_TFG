@@ -1,5 +1,6 @@
 package com.example.proyecto_tfg.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -13,6 +14,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.R
+import com.example.proyecto_tfg.activities.LoginActivity
 import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.models.ProfileSB
@@ -123,6 +125,8 @@ class ProfileFragment : Fragment() {
 
             R.id.profile_login -> {
 
+                val test = SBUserManager(activity as MainActivity).signOut()
+                (activity as MainActivity).recreate()
                 true
             }
 

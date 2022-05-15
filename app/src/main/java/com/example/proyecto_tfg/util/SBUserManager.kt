@@ -128,12 +128,9 @@ class SBUserManager (con: Context){
      * Method that receives an email and a password and log in with them.
      */
     fun signIn(email: String, password: String) {
+
         val result = goTrueClient.signInWithEmail(email, password)
-        /**
-         * db.rawQuery("INSERT INTO CurrentToken(id, user_token, refresh_token) values(0, '${result.accessToken}', '${result.refreshToken}')",
-        null)
-        db.rawQuery("UPDATE CurrentToken SET 'user_token' = '${result.accessToken}', 'refresh_token' = '${result.refreshToken}' WHERE 'id' = 0", null)
-         */
+
         var tokenData = ContentValues()
 
         try {
@@ -192,7 +189,7 @@ class SBUserManager (con: Context){
     /**
      * Method that receives an email and a password and sign up a new account with them.
      */
-    fun signUp(email: String, password: String) {
+    fun signUp(username: String, email: String, password: String) {
 
         val markdownMediaType = "application/json".toMediaType()
 
@@ -224,7 +221,7 @@ class SBUserManager (con: Context){
             getDBManager()!!.addProfile(
                 ProfileSB(
                     user_id = id,
-                    username = "DefName",
+                    username = username,
                     avatar_url = "https://avatars.cloudflare.steamstatic.com/724bb41a602d6540c0cf83d52f503bb74262bb17_full.jpg",
                     description = "",
                     country = 0,
@@ -270,7 +267,7 @@ class SBUserManager (con: Context){
         val token = getToken()
         if (token != null) {
             goTrueClient.signOut(token)
-            db.rawQuery("DELETE FROM CurrentToken WHERE id = 0", null)
+            db.delete("CurrentToken", "id = 0", null)
         }
 
     }
