@@ -1,4 +1,4 @@
-package com.example.proyecto_tfg
+package com.example.proyecto_tfg.enums
 
 enum class StatusEnum (val value: String){
 

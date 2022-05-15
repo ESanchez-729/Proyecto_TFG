@@ -1,11 +1,9 @@
 package com.example.proyecto_tfg
 
 import android.Manifest
-import android.content.Context
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.MediaStore
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -14,27 +12,32 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
-import java.security.Permission
 import android.content.pm.PackageManager
-
 import androidx.core.app.ActivityCompat
-
 import android.os.Build
 import android.util.Log
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
+import android.widget.Toast
+import com.example.proyecto_tfg.activities.LoginActivity
+import com.example.proyecto_tfg.fragments.LibraryFragment
+import com.example.proyecto_tfg.fragments.ProfileFragment
+import com.example.proyecto_tfg.fragments.SearchFragment
+import com.example.proyecto_tfg.util.SBUserManager
 
 
 class MainActivity : AppCompatActivity() {
 
     //Binding del ActivityMain
-    lateinit var binding:ActivityMainBinding
+    private lateinit var binding:ActivityMainBinding
     //Cliente para las peticiones
-    lateinit var client: OkHttpClient
+    private lateinit var client: OkHttpClient
     //Url para realizar las peticiones
     private val url = "https://api.igdb.com/v4/"
     //Permisos a pedir.
     private val permissions = listOf(Manifest.permission.INTERNET, Manifest.permission.ACCESS_NETWORK_STATE)
+    //Fragmento actual
+    var currentFragment: Int = -1
 
     //Método que se ejecuta al crearse el activity.
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,14 +52,41 @@ class MainActivity : AppCompatActivity() {
         val policy: ThreadPolicy = ThreadPolicy.Builder().permitAll().build()
         StrictMode.setThreadPolicy(policy)
 
+        val usrManager = SBUserManager(this)
+        //usrManager.signUp("supatestmyvc@gmail.com", "potato200")
+        //usrManager.signIn("supatestmyvc@gmail.com", "potato200")
+
+        if (!usrManager.loggedIn()){
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+        } else {
+            usrManager.refreshToken()
+        }
+
         //Se añade funcionalidad a los botones inferiores.
         binding.bottomNavigationView.setOnItemSelectedListener {
 
             when (it.itemId) {
 
-                R.id.search_button -> replaceFragment(SearchFragment())
-                R.id.profile_button -> replaceFragment(ProfileFragment())
-                R.id.library_button -> replaceFragment(LibraryFragment())
+                R.id.search_button -> {
+                    if (currentFragment != R.id.search_button) {
+                        replaceFragment(SearchFragment())
+                        currentFragment = R.id.search_button
+                    }
+                }
+                R.id.profile_button -> {
+                    if (currentFragment != R.id.profile_button) {
+                        replaceFragment(ProfileFragment())
+                        currentFragment = R.id.profile_button
+                    }
+                }
+                R.id.library_button -> {
+                if (currentFragment != R.id.library_button) {
+                    replaceFragment(LibraryFragment.newInstance("", usrManager.getUserId()!!))
+                    currentFragment = R.id.library_button
+                }
+            }
 
             }
 
@@ -129,4 +159,20 @@ class MainActivity : AppCompatActivity() {
 
         return true
     }
+
+    override fun onResume() {
+        super.onResume()
+        val usrManager = SBUserManager(this)
+        //usrManager.signUp("supatestmyvc@gmail.com", "potato200")
+        //usrManager.signIn("supatestmyvc@gmail.com", "potato200")
+
+        if (!usrManager.loggedIn()){
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
+        } else {
+            usrManager.refreshToken()
+        }
+    }
+
 }

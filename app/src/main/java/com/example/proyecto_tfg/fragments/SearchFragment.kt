@@ -1,5 +1,6 @@
-package com.example.proyecto_tfg
+package com.example.proyecto_tfg.fragments
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.SearchManager
 import android.content.Context
@@ -13,6 +14,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.proyecto_tfg.util.Adapter
+import com.example.proyecto_tfg.enums.StatusEnum
+import com.example.proyecto_tfg.MainActivity
+import com.example.proyecto_tfg.models.GameItem
+import com.example.proyecto_tfg.R
+import com.example.proyecto_tfg.util.SBUserManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.MediaType.Companion.toMediaType
@@ -22,6 +29,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlinx.coroutines.*
 
 /**
  * A simple [Fragment] subclass.
@@ -43,6 +51,8 @@ class SearchFragment : Fragment() {
     //Variables que almacenarán los filtros a colocar
     private var searchSort = ""
     var searchFilter = FilterContent(false, "")
+    //User Manager
+    lateinit var usrManager: SBUserManager
 
     //Método que se ejecuta al crear el fragment.
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +61,7 @@ class SearchFragment : Fragment() {
         //Se inicializan el cliente y el gson.
         client = OkHttpClient()
         gson = Gson()
+        usrManager = SBUserManager(activity as MainActivity)
     }
 
     //Método que se ejecuta al crearse la vista.
@@ -79,7 +90,7 @@ class SearchFragment : Fragment() {
         inflater.inflate(R.menu.search_options, menu)
 
         val manager = activity?.getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        val searchItem = menu?.findItem(R.id.search_bar)
+        val searchItem = menu.findItem(R.id.search_bar)
         val searchView = searchItem.actionView as SearchView
 
         searchView.setSearchableInfo(manager.getSearchableInfo(requireActivity().componentName))
@@ -87,6 +98,7 @@ class SearchFragment : Fragment() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 
             //Para realizar la búsqueda.
+            @SuppressLint("NotifyDataSetChanged")
             override fun onQueryTextSubmit(query: String?): Boolean {
 
                 //Se inicializa la variable que almacenara el parámetro de búsqueda.
@@ -94,10 +106,18 @@ class SearchFragment : Fragment() {
                 //Se almacena el valor de la query y se desselecciona
                 if(query != null) {search = query}
                 searchView.clearFocus()
-                //Se hace la consulta y se sacan los datos.
-                val data : List<JsonTransformer> = getData(search)
-                //Se cargan los datos en el recyclerView.
-                showData(data)
+                var data : List<JsonTransformer> = listOf()
+                CoroutineScope(Dispatchers.IO).launch {
+                    //Se hace la consulta y se sacan los datos.
+                    data = getData(search)
+                    withContext(Dispatchers.Main) {
+                        //Se cargan los datos en el recyclerView.
+                        try {
+                            showData(data)
+                        } catch (e: IllegalStateException) {Log.d(":::", "chill")}
+                        adaptador?.notifyDataSetChanged()
+                    }
+                }
                 //Se limpia la caja de búsqueda.
                 searchView.setQuery("", false)
                 searchItem.collapseActionView()
@@ -192,28 +212,45 @@ class SearchFragment : Fragment() {
                     image = finalUrl,
                     title = item.name,
                     platform = finalPlatform,
-                    status = StatusEnum.PLAN_TO_PLAY.value,
+                    status = StatusEnum.NOT_ADDED.value,
                     score = item.total_rating!!.toInt()
                 )
             )
         }
 
         //Se ordena el array y se almacena en otra variable.
-        val sortedData : List<GameItem> = when(searchSort) {
+        val sortedData : MutableList<GameItem> = when(searchSort) {
 
-            getString(R.string.menu_option1) -> datos.sortedWith(compareBy<GameItem> {it.score})
-            getString(R.string.menu_option2) -> datos.toList()
-            getString(R.string.menu_option3) -> datos.sortedWith(compareBy<GameItem> {it.title})
-            else -> datos.toList()
+            getString(R.string.menu_option1) -> datos.sortedWith(compareBy<GameItem> {it.score}).toMutableList()
+            getString(R.string.menu_option2) -> datos
+            getString(R.string.menu_option3) -> datos.sortedWith(compareBy<GameItem> {it.title}).toMutableList()
+            else -> datos
 
         }
+
+        /**
+         * Change game status if it is already added.
+         */
+        val dbManager = usrManager.getDBManager()
+        var finalData = sortedData
+        if(dbManager != null) {
+            val userData = dbManager.getLibraryByUser(usrManager.getUserId()!!)
+            finalData =  datos.map { item ->
+                val temp = userData?.find { item2 -> item.id == item2.game_id.toInt() }
+                if (temp != null) {
+                    item.status = temp.status.value
+                }
+                item
+            }.toMutableList()
+        }
+
 
         //Se configura el reciclerView y se añaden los datos.
         reciclador!!.setHasFixedSize(true)
         gestor = LinearLayoutManager(activity as MainActivity)
 
         reciclador!!.layoutManager = gestor
-        adaptador = Adapter(sortedData)
+        adaptador = Adapter(finalData, activity as MainActivity, false)
         reciclador!!.adapter = adaptador
 
         //Método que añade funcionalidad a cada fila del recyclerView.
@@ -227,7 +264,6 @@ class SearchFragment : Fragment() {
                     })
 
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
-
                 return false
             }
 
