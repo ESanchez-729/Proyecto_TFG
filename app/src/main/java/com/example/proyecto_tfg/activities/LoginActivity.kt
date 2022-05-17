@@ -12,6 +12,7 @@ import com.example.proyecto_tfg.util.SBUserManager
 import android.content.Intent
 import com.example.proyecto_tfg.MainActivity
 import io.supabase.gotrue.http.GoTrueHttpException
+import org.json.JSONObject
 
 class LoginActivity : AppCompatActivity() {
 
@@ -58,6 +59,19 @@ class LoginActivity : AppCompatActivity() {
 
         //usrManager.signUp("supatestmyvc@gmail.com", "potato200")
         //usrManager.signIn("supatestmyvc@gmail.com", "potato200")
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val usrManager = SBUserManager(this)
+
+        if (usrManager.loggedIn()){
+            Toast.makeText(this, getString(R.string.err_already_logged_in), Toast.LENGTH_LONG).show()
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
 
     }
 
