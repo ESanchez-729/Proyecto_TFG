@@ -7,9 +7,11 @@ import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteDatabase.openOrCreateDatabase
 import android.util.Log
+import android.widget.Toast
 import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.models.ProfileSB
 import io.supabase.gotrue.GoTrueDefaultClient
+import io.supabase.gotrue.http.GoTrueHttpException
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -294,6 +296,36 @@ class SBUserManager (con: Context){
 
         return null
 
+    }
+
+    private fun validToken() : Boolean {
+        return if(loggedIn()) {
+
+            try {
+                if(getUserId() != null) {return true}
+                false
+            } catch (io: IOException) {
+                false
+            }
+
+        } else {
+            false
+        }
+    }
+
+    fun validateSession(invokeNotValid: () -> Unit ) {
+        if (validToken()) {
+            try {
+                refreshToken()
+            } catch (e : GoTrueHttpException) {
+                Toast.makeText(context, "Status " + e.status + ", " + JSONObject(e.data.toString()).getString("error_description"), Toast.LENGTH_LONG).show()
+                deleteLocalToken()
+                invokeNotValid()
+            }
+        } else {
+            deleteLocalToken()
+            invokeNotValid()
+        }
     }
 
 }

@@ -102,6 +102,7 @@ class SearchFragment : Fragment() {
                 searchView.clearFocus()
                 var data : List<JsonTransformer>
                 CoroutineScope(Dispatchers.IO).launch {
+
                     //Se hace la consulta y se sacan los datos.
                     data = getData(search)
                     withContext(Dispatchers.Main) {

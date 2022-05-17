@@ -18,10 +18,7 @@ import com.example.proyecto_tfg.models.ProfileSB
 import com.example.proyecto_tfg.util.SBUserManager
 import com.makeramen.roundedimageview.RoundedImageView
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -79,6 +76,7 @@ class ProfileFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
 
             val userManager = SBUserManager(context)
+            userManager.validateSession { this.cancel("Session not valid", Exception("Token not valid")); context.recreate() }
             if(userManager.loggedIn()) {
                 val dbManager = userManager.getDBManager()
                 currentProfile = dbManager?.getUserDataById(userManager.getUserId()!!)!!

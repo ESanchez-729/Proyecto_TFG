@@ -72,6 +72,7 @@ class LibraryFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
 
             val userManager = SBUserManager(context)
+            userManager.validateSession { this.cancel("Session not valid", Exception("Token not valid")); context.recreate() }
 
             if(userManager.loggedIn()) {
                 val dbManager = userManager.getDBManager()

@@ -141,13 +141,7 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
         } else {
-            try {
-                usrManager.refreshToken()
-            } catch (e : GoTrueHttpException) {
-                Toast.makeText(this, "Status " + e.status + ", " + JSONObject(e.data.toString()).getString("error_description"), Toast.LENGTH_LONG).show()
-                usrManager.deleteLocalToken()
-                recreate()
-            }
+           usrManager.validateSession { recreate() }
         }
     }
 
