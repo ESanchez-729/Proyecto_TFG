@@ -1,6 +1,5 @@
 package com.example.proyecto_tfg.fragments
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -14,9 +13,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.R
-import com.example.proyecto_tfg.activities.LoginActivity
 import com.example.proyecto_tfg.enums.StatusEnum
-import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.models.ProfileSB
 import com.example.proyecto_tfg.util.SBUserManager
 import com.makeramen.roundedimageview.RoundedImageView
@@ -94,20 +91,25 @@ class ProfileFragment : Fragment() {
 
                     for (item in libraryList){
 
-                        item.value.setOnClickListener(View.OnClickListener {
+                        item.value.setOnClickListener {
                             Toast.makeText(context, item.key, Toast.LENGTH_SHORT).show()
-                            replaceFragment(LibraryFragment.newInstance(item.key, currentProfile.user_id))
-                        })
+                            replaceFragment(
+                                LibraryFragment.newInstance(
+                                    item.key,
+                                    currentProfile.user_id
+                                )
+                            )
+                        }
 
                     }
 
-                    socialReviews.setOnClickListener(View.OnClickListener {
+                    socialReviews.setOnClickListener {
                         Toast.makeText(context, "Reviews", Toast.LENGTH_SHORT).show()
-                    })
+                    }
 
-                    socialFriends.setOnClickListener(View.OnClickListener {
+                    socialFriends.setOnClickListener {
                         Toast.makeText(context, "Friends", Toast.LENGTH_SHORT).show()
-                    })
+                    }
 
                 }
             }
@@ -125,7 +127,7 @@ class ProfileFragment : Fragment() {
 
             R.id.profile_login -> {
 
-                val test = SBUserManager(activity as MainActivity).signOut()
+                SBUserManager(activity as MainActivity).signOut()
                 (activity as MainActivity).recreate()
                 true
             }

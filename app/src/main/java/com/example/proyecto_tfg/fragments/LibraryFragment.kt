@@ -34,9 +34,9 @@ class LibraryFragment : Fragment() {
     private var searchFilter: String? = null
     private var otherUserId: String? = null
     //Objetos para el recycler
-    var reciclador: RecyclerView? = null
+    private var reciclador: RecyclerView? = null
     private var adaptador: RecyclerView.Adapter<*>? = null
-    var gestor: RecyclerView.LayoutManager? = null
+    private var gestor: RecyclerView.LayoutManager? = null
 
     //Método que se ejecuta al crear el fragment.
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -135,7 +135,7 @@ class LibraryFragment : Fragment() {
 
         @JvmStatic
         fun newInstance(statusFilter: String, usrID: String) : LibraryFragment {
-            var lf = LibraryFragment()
+            val lf = LibraryFragment()
             val args = Bundle()
             args.putString("search_filter", statusFilter)
             args.putString("other_user_id", usrID)

@@ -1,7 +1,5 @@
 package com.example.proyecto_tfg.models
 
-import java.util.*
-
 data class ProfileSB (
     val user_id : String,
     val username : String,

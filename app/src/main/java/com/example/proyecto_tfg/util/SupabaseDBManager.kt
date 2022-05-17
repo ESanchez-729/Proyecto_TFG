@@ -12,7 +12,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.supabase.postgrest.PostgrestDefaultClient
 import org.json.JSONArray
-import org.json.JSONObject
 import java.net.URI
 import java.text.Normalizer
 import java.util.*
@@ -89,7 +88,7 @@ class SupabaseDBManager (con : Context, token: String){
     fun insertGameIntoDB(game : GameSB) {
 
         Log.d(":::", Gson().toJson(game))
-        game.name = stripAccents(game.name)?: game.name
+        game.name = stripAccents(game.name)
 
         val result = postgrestClient.from<GameSB>("game")
             .insert(game, true)
@@ -174,7 +173,7 @@ class SupabaseDBManager (con : Context, token: String){
     fun getLibraryByUser(userid : String) : List<LibrarySB>?{
         val userID = UUID.fromString(userid)
 
-        var response = postgrestClient.from<LibrarySB>("library")
+        val response = postgrestClient.from<LibrarySB>("library")
                 .select().eq("user_id", userID).execute()
 
         if(response.status == 200) {
@@ -215,7 +214,7 @@ class SupabaseDBManager (con : Context, token: String){
     fun addProfile(profile: ProfileSB) {
 
         Log.d(":::", Gson().toJson(profile))
-        val request = postgrestClient.from<ProfileSB>("profile")
+        postgrestClient.from<ProfileSB>("profile")
             .insert(profile).execute()
 
     }
@@ -242,14 +241,8 @@ class SupabaseDBManager (con : Context, token: String){
     }
 
     private fun stripAccents(s: String): String {
-        var current = s
-        current = Normalizer.normalize(s, Normalizer.Form.NFD)
+        var current: String = Normalizer.normalize(s, Normalizer.Form.NFD)
         current = current.replace("[\\p{InCombiningDiacriticalMarks}]".toRegex(), "")
-
-        //current = current.replace('-', ' ')
-        //current = current.replace('\\', ' ')
-        //current = current.replace('\'', ' ')
-        //current = current.replace(':', ' ')
 
         return current
     }

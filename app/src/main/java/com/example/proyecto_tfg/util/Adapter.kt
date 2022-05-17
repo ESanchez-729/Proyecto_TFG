@@ -1,7 +1,6 @@
 package com.example.proyecto_tfg.util
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +9,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.enums.StatusEnum
@@ -81,48 +79,50 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
             }
         }
 
-        viewHolder.addButton.setOnClickListener(View.OnClickListener {
+        viewHolder.addButton.setOnClickListener {
 
             viewHolder.addButton.isEnabled = false
-            if(dataSet[position].status == StatusEnum.NOT_ADDED.value) {
+            if (dataSet[position].status == StatusEnum.NOT_ADDED.value) {
 
                 CoroutineScope(Dispatchers.IO).launch {
                     addRegister(position)
                     dataSet[position].status = StatusEnum.PLAYING.value
-                    withContext(Dispatchers.Main){
+                    withContext(Dispatchers.Main) {
                         viewHolder.removeButton.isEnabled = true
                         notifyItemChanged(position)
                     }
                 }
             }
-        })
+        }
 
-        viewHolder.removeButton.setOnClickListener(View.OnClickListener {
+        viewHolder.removeButton.setOnClickListener {
             viewHolder.removeButton.isEnabled = false
-                try {
-                    if(dataSet[position].status != StatusEnum.NOT_ADDED.value) {
+            try {
+                if (dataSet[position].status != StatusEnum.NOT_ADDED.value) {
 
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                removeRegister(position, currentId)
-                                if(dissapearWhenDeleted) {
-                                    dataSet.removeAt(position)
-                                    withContext(Dispatchers.Main){
-                                        notifyItemRemoved(position)
-                                        notifyItemChanged(position)
-                                    }
-                                } else {
-                                    dataSet[position].status = StatusEnum.NOT_ADDED.value
-                                    withContext(Dispatchers.Main){
-                                        viewHolder.addButton.isEnabled = true
-                                        notifyItemChanged(position)
-                                    }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            removeRegister(currentId)
+                            if (dissapearWhenDeleted) {
+                                dataSet.removeAt(position)
+                                withContext(Dispatchers.Main) {
+                                    notifyItemRemoved(position)
+                                    notifyItemChanged(position)
                                 }
-                            } catch (e: IndexOutOfBoundsException) {}
+                            } else {
+                                dataSet[position].status = StatusEnum.NOT_ADDED.value
+                                withContext(Dispatchers.Main) {
+                                    viewHolder.addButton.isEnabled = true
+                                    notifyItemChanged(position)
+                                }
+                            }
+                        } catch (e: IndexOutOfBoundsException) {
                         }
                     }
-                } catch (e: IndexOutOfBoundsException) {}
-        })
+                }
+            } catch (e: IndexOutOfBoundsException) {
+            }
+        }
 
     }
 
@@ -158,7 +158,7 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
         )
     }
 
-    private fun removeRegister(position : Int, id : Int) {
+    private fun removeRegister( id : Int) {
 
         val usrManager = SBUserManager(context)
         val dbManager = usrManager.getDBManager()

@@ -44,13 +44,14 @@ class SBUserManager (con: Context){
         db.execSQL("CREATE TABLE IF NOT EXISTS CurrentToken('id' INTEGER PRIMARY KEY, 'user_token' VARCHAR, 'refresh_token' VARCHAR);")
         okHttp = OkHttpClient()
 
-        if(getToken() != null) {
-            goTrueClient = GoTrueDefaultClient(
+        val token = getToken()
+        goTrueClient = if(token != null) {
+            GoTrueDefaultClient(
                 url = url,
-                headers = mapOf("Authorization" to getToken()!!, "apiKey" to context.getString(R.string.AnonKey_Supabase))
+                headers = mapOf("Authorization" to token, "apiKey" to context.getString(R.string.AnonKey_Supabase))
             )
         } else {
-            goTrueClient = GoTrueDefaultClient(
+            GoTrueDefaultClient(
                 url = url,
                 headers = mapOf("Authorization" to "foo", "apiKey" to context.getString(R.string.AnonKey_Supabase))
             )
@@ -61,21 +62,23 @@ class SBUserManager (con: Context){
     /**
      * Method that refresh the registered token when it is expired.
      */
-    fun refreshToken(): Boolean {
+    fun refreshToken() {
 
         val refreshTkn = getRefreshToken()
         if (refreshTkn != null) {
+
             val result = goTrueClient.refreshAccessToken(refreshTkn)
+
             val tokenData = ContentValues()
             tokenData.put("user_token", result.accessToken)
             tokenData.put("refresh_token", result.refreshToken)
 
-            db.beginTransaction();
+            db.beginTransaction()
             val conf = db.update("CurrentToken", tokenData, "id = 0", null)
             if(conf == 0) {
                 Log.d(":::", "FUCK YOU ANDROID (Refresh)")
             }
-            db.setTransactionSuccessful();
+            db.setTransactionSuccessful()
             db.endTransaction()
 
             Log.d(":::", "Token refreshed successfully")
@@ -84,10 +87,7 @@ class SBUserManager (con: Context){
                 url = url,
                 headers = mapOf("Authorization" to result.accessToken, "apiKey" to context.getString(R.string.AnonKey_Supabase))
             )
-            return true
         }
-
-        return false
     }
 
     /**
@@ -131,7 +131,7 @@ class SBUserManager (con: Context){
 
         val result = goTrueClient.signInWithEmail(email, password)
 
-        var tokenData = ContentValues()
+        val tokenData = ContentValues()
 
         try {
 
@@ -141,21 +141,21 @@ class SBUserManager (con: Context){
                 tokenData.put("user_token", result.accessToken)
                 tokenData.put("refresh_token", result.refreshToken)
 
-                db.beginTransaction();
+                db.beginTransaction()
                 db.insert("CurrentToken", null, tokenData)
-                db.setTransactionSuccessful();
+                db.setTransactionSuccessful()
 
             } else {
 
                 tokenData.put("user_token", result.accessToken)
                 tokenData.put("refresh_token", result.refreshToken)
 
-                db.beginTransaction();
+                db.beginTransaction()
                 val conf = db.update("CurrentToken", tokenData, "id = 0", null)
                 if(conf == 0) {
                     Log.d(":::", "FUCK YOU ANDROID")
                 }
-                db.setTransactionSuccessful();
+                db.setTransactionSuccessful()
 
             }
 
@@ -163,17 +163,17 @@ class SBUserManager (con: Context){
             e.printStackTrace()
             Log.d(":::ERR", "Transaction error")
         } finally {
-            db.endTransaction();
+            db.endTransaction()
         }
 
-        Log.d(":::", result.accessToken + ", " + result.refreshToken)
-        Log.d(":::", getToken() ?: "Null")
-        if (getToken() == result.accessToken) {
+        val currentToken = getToken()
+
+        if (currentToken == result.accessToken) {
             Log.d(":::", "Token actualizado correctamente")
         }
         goTrueClient = GoTrueDefaultClient(
             url = url,
-            headers = mapOf("Authorization" to getToken()!!,
+            headers = mapOf("Authorization" to currentToken!!,
                 "apiKey" to context.getString(R.string.AnonKey_Supabase))
         )
         Log.d(":::", "Cliente actualizado correctamente")
@@ -208,8 +208,6 @@ class SBUserManager (con: Context){
 
             if (!response.isSuccessful) throw IOException("Unexpected code $response")
             val postResult : String = response.body?.string() ?: throw IOException("Data not found $response")
-
-            Log.d(":::", postResult)
 
             val result = JSONObject(postResult)
             val user = result.getJSONObject("user")
@@ -269,6 +267,20 @@ class SBUserManager (con: Context){
             db.delete("CurrentToken", "id = 0", null)
         }
 
+    }
+
+    /**
+     * Method that deletes the local token on the database.
+     */
+    fun deleteLocalToken() {
+        db.delete("CurrentToken", "id = 0", null)
+    }
+
+    /**
+     * Method that closes the database
+     */
+    fun closeDB() {
+        db.close()
     }
 
     /**
