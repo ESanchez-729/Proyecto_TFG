@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.R
@@ -79,16 +80,46 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
             }
         }
 
+        when(StatusEnum.values().find { it.value ==  dataSet[position].status}) {
+
+            StatusEnum.NOT_ADDED -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(null,null,null,null)
+            
+            StatusEnum.COMPLETED -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    ResourcesCompat.getDrawable(context.resources,R.drawable.status_circle_completed, null)
+                    ,null,null,null)
+
+            StatusEnum.PLAYING -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    ResourcesCompat.getDrawable(context.resources,R.drawable.status_circle_playing, null)
+                    ,null,null,null)
+
+            StatusEnum.DROPPED -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    ResourcesCompat.getDrawable(context.resources,R.drawable.status_circle_dropped, null)
+                    ,null,null,null)
+
+            StatusEnum.ON_HOLD -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    ResourcesCompat.getDrawable(context.resources,R.drawable.status_circle_onhold, null)
+                    ,null,null,null)
+
+            StatusEnum.PLAN_TO_PLAY -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    ResourcesCompat.getDrawable(context.resources,R.drawable.status_circle_plantoplay, null)
+                    ,null,null,null)
+
+        }
+
         viewHolder.addButton.setOnClickListener {
 
-            viewHolder.addButton.isEnabled = false
             if (dataSet[position].status == StatusEnum.NOT_ADDED.value) {
 
                 CoroutineScope(Dispatchers.IO).launch {
                     addRegister(position)
                     dataSet[position].status = StatusEnum.PLAYING.value
                     withContext(Dispatchers.Main) {
-                        viewHolder.removeButton.isEnabled = true
                         notifyItemChanged(position)
                     }
                 }
@@ -96,7 +127,6 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
         }
 
         viewHolder.removeButton.setOnClickListener {
-            viewHolder.removeButton.isEnabled = false
             try {
                 if (dataSet[position].status != StatusEnum.NOT_ADDED.value) {
 
@@ -112,7 +142,6 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
                             } else {
                                 dataSet[position].status = StatusEnum.NOT_ADDED.value
                                 withContext(Dispatchers.Main) {
-                                    viewHolder.addButton.isEnabled = true
                                     notifyItemChanged(position)
                                 }
                             }
