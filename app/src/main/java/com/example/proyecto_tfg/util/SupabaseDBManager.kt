@@ -231,15 +231,6 @@ class SupabaseDBManager (con : Context, token: String){
         return objectResult.get("name").toString()
     }
 
-    /**
-     * Method that returns the reviews of an user.
-     * Not yet implemented
-     */
-    fun getReviewsByUserId() {
-        TODO()
-        //Consultar reviews por user_id (tal vez)
-    }
-
     private fun stripAccents(s: String): String {
         var current: String = Normalizer.normalize(s, Normalizer.Form.NFD)
         current = current.replace("[\\p{InCombiningDiacriticalMarks}]".toRegex(), "")

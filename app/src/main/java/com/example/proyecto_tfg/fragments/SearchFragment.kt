@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.proyecto_tfg.util.Adapter
@@ -22,6 +23,7 @@ import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.util.SBUserManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import io.supabase.gotrue.http.GoTrueHttpException
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -103,14 +105,20 @@ class SearchFragment : Fragment() {
                 var data : List<JsonTransformer>
                 CoroutineScope(Dispatchers.IO).launch {
 
-                    //Se hace la consulta y se sacan los datos.
-                    data = getData(search)
-                    withContext(Dispatchers.Main) {
-                        //Se cargan los datos en el recyclerView.
-                        try {
-                            showData(data)
-                        } catch (e: IllegalStateException) {Log.d(":::", "chill")}
-                        adaptador?.notifyDataSetChanged()
+                    try {
+                        //Se hace la consulta y se sacan los datos.
+                        data = getData(search)
+                        withContext(Dispatchers.Main) {
+                            //Se cargan los datos en el recyclerView.
+                            try {
+                                showData(data)
+                            } catch (e: IllegalStateException) {
+                                Log.d(":::", "chill")
+                            }
+                            adaptador?.notifyDataSetChanged()
+                        }
+                    } catch (e : GoTrueHttpException) {
+                        Toast.makeText(context, getString(R.string.err_unknown_restart_opt), Toast.LENGTH_LONG).show()
                     }
                 }
                 //Se limpia la caja de búsqueda.

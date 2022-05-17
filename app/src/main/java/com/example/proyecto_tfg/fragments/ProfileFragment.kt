@@ -18,6 +18,7 @@ import com.example.proyecto_tfg.models.ProfileSB
 import com.example.proyecto_tfg.util.SBUserManager
 import com.makeramen.roundedimageview.RoundedImageView
 import com.squareup.picasso.Picasso
+import io.supabase.gotrue.http.GoTrueHttpException
 import kotlinx.coroutines.*
 
 // TODO: Rename parameter arguments, choose names that match
@@ -76,39 +77,44 @@ class ProfileFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
 
             val userManager = SBUserManager(context)
-            userManager.validateSession { this.cancel("Session not valid", Exception("Token not valid")); context.recreate() }
             if(userManager.loggedIn()) {
-                val dbManager = userManager.getDBManager()
-                currentProfile = dbManager?.getUserDataById(userManager.getUserId()!!)!!
+                try {
 
-                withContext(Dispatchers.Main) {
-                    Picasso.get().load(currentProfile.avatar_url).resize(80, 80).into(userImage)
-                    userName.text = currentProfile.username
-                    userLocation.text = dbManager.getCountryNameById(currentProfile.country!!.toInt())
-                    userDescription.text = currentProfile.description
+                    val dbManager = userManager.getDBManager()
+                    currentProfile = dbManager?.getUserDataById(userManager.getUserId()!!)!!
 
-                    for (item in libraryList){
+                    withContext(Dispatchers.Main) {
+                        Picasso.get().load(currentProfile.avatar_url).resize(80, 80).into(userImage)
+                        userName.text = currentProfile.username
+                        userLocation.text = dbManager.getCountryNameById(currentProfile.country!!.toInt())
+                        userDescription.text = currentProfile.description
 
-                        item.value.setOnClickListener {
-                            Toast.makeText(context, item.key, Toast.LENGTH_SHORT).show()
-                            replaceFragment(
-                                LibraryFragment.newInstance(
-                                    item.key,
-                                    currentProfile.user_id
+                        for (item in libraryList){
+
+                            item.value.setOnClickListener {
+                                Toast.makeText(context, item.key, Toast.LENGTH_SHORT).show()
+                                replaceFragment(
+                                    LibraryFragment.newInstance(
+                                        item.key,
+                                        currentProfile.user_id
+                                    )
                                 )
-                            )
+                            }
+
+                        }
+
+                        socialReviews.setOnClickListener {
+                            Toast.makeText(context, "Reviews", Toast.LENGTH_SHORT).show()
+                        }
+
+                        socialFriends.setOnClickListener {
+                            Toast.makeText(context, "Friends", Toast.LENGTH_SHORT).show()
                         }
 
                     }
 
-                    socialReviews.setOnClickListener {
-                        Toast.makeText(context, "Reviews", Toast.LENGTH_SHORT).show()
-                    }
-
-                    socialFriends.setOnClickListener {
-                        Toast.makeText(context, "Friends", Toast.LENGTH_SHORT).show()
-                    }
-
+                } catch (e : GoTrueHttpException) {
+                    Toast.makeText(context, context.getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -144,14 +150,6 @@ class ProfileFragment : Fragment() {
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment NewsFragment.
-         */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =

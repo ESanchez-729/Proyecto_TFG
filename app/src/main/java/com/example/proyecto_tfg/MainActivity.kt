@@ -133,15 +133,20 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         val usrManager = SBUserManager(this)
-        //usrManager.signUp("supatestmyvc@gmail.com", "potato200")
-        //usrManager.signIn("supatestmyvc@gmail.com", "potato200")
+        //("supatestmyvc@gmail.com", "potato200")
 
         if (!usrManager.loggedIn()){
             Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
-        } else {
-           usrManager.validateSession { recreate() }
+        } else if(!usrManager.validToken()) {
+           try {
+               usrManager.refreshToken()
+           } catch (e : GoTrueHttpException) {
+               Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
+               usrManager.deleteLocalToken()
+               recreate()
+           }
         }
     }
 

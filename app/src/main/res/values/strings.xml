@@ -48,5 +48,6 @@
     <string name="err_invalid_email">Email is not valid</string>
     <string name="err_empty_fields">All the fields must be filled</string>
     <string name="err_register">There was an error creating the account</string>
-    <string name="err_already_logged_in">There was an error creating the account</string>
+    <string name="err_already_logged_in">User already logged in</string>
+    <string name="err_unknown_restart_opt">An error has occurred, please restart the app and try again</string>
 </resources>

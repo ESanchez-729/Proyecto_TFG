@@ -298,7 +298,7 @@ class SBUserManager (con: Context){
 
     }
 
-    private fun validToken() : Boolean {
+    fun validToken() : Boolean {
         return if(loggedIn()) {
 
             try {
@@ -313,19 +313,12 @@ class SBUserManager (con: Context){
         }
     }
 
-    fun validateSession(invokeNotValid: () -> Unit ) {
-        if (validToken()) {
-            try {
-                refreshToken()
-            } catch (e : GoTrueHttpException) {
-                Toast.makeText(context, "Status " + e.status + ", " + JSONObject(e.data.toString()).getString("error_description"), Toast.LENGTH_LONG).show()
-                deleteLocalToken()
-                invokeNotValid()
-            }
-        } else {
-            deleteLocalToken()
-            invokeNotValid()
-        }
-    }
-
 }
+
+/** Activity de juego -> Solo web
+ * Reviews -> en lo que seria el activity de juego
+ * Fragment con recycler de amigos
+ * Boton de añadir/modificar juego en vez de solo añadir o quitar te deja seleccionar estado.
+ *
+ * Hay token -> Llamada para pillar usuario por token -> refreshToken -> Elimina token db
+*/

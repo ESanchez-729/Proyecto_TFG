@@ -16,6 +16,7 @@ import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.models.GameSB
 import com.example.proyecto_tfg.models.LibrarySB
 import com.squareup.picasso.Picasso
+import io.supabase.gotrue.http.GoTrueHttpException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -114,16 +115,22 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
 
         viewHolder.addButton.setOnClickListener {
 
-            if (dataSet[position].status == StatusEnum.NOT_ADDED.value) {
+            try {
+                if (dataSet[position].status == StatusEnum.NOT_ADDED.value) {
 
-                CoroutineScope(Dispatchers.IO).launch {
-                    addRegister(position)
-                    dataSet[position].status = StatusEnum.PLAYING.value
-                    withContext(Dispatchers.Main) {
-                        notifyItemChanged(position)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        addRegister(position)
+                        dataSet[position].status = StatusEnum.PLAYING.value
+                        withContext(Dispatchers.Main) {
+                            notifyItemChanged(position)
+                        }
                     }
                 }
+            } catch (e : GoTrueHttpException) {
+                Toast.makeText(context, context.getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
             }
+
+
         }
 
         viewHolder.removeButton.setOnClickListener {
@@ -150,6 +157,8 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
                     }
                 }
             } catch (e: IndexOutOfBoundsException) {
+            } catch (e : GoTrueHttpException) {
+                Toast.makeText(context, context.getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
             }
         }
 

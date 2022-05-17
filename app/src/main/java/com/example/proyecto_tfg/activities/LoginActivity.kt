@@ -76,7 +76,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun googleLogin() {
-        TODO("Not yet implemented")
+        TODO("Not yet implemented, ehe")
     }
 
 }
