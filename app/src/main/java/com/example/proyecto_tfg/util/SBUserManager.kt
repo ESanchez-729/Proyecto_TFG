@@ -7,7 +7,6 @@ import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteDatabase.openOrCreateDatabase
 import android.util.Log
-import android.widget.Toast
 import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.models.ProfileSB
 import io.supabase.gotrue.GoTrueDefaultClient
@@ -25,36 +24,32 @@ import java.io.IOException
 class SBUserManager (con: Context){
 
     //Internal phone database
-    private val db: SQLiteDatabase
+    private val db: SQLiteDatabase = openOrCreateDatabase(con.getDatabasePath("MyVCdb.db"), null)
     //Main application context
     private val context: Context = con
     //OkHttp Client
     private var okHttp : OkHttpClient
     //Client of GoTrue-kt library
     private var goTrueClient : GoTrueDefaultClient
-    //Base url for authentication requests
-    private val url = "https://hdwsktohrhulukpzmike.supabase.co/auth/v1"
 
     //Initialise the variables of the class when it is instanced.
     init {
 
         /**
-         * Define the database and table that is going to be used and initialise
-         * the GoTrue client.
+         * Define the table that is going to be used and initialise the GoTrue client.
          */
-        db = openOrCreateDatabase(context.getDatabasePath("MyVCdb.db"), null)
         db.execSQL("CREATE TABLE IF NOT EXISTS CurrentToken('id' INTEGER PRIMARY KEY, 'user_token' VARCHAR, 'refresh_token' VARCHAR);")
         okHttp = OkHttpClient()
 
         val token = getToken()
         goTrueClient = if(token != null) {
             GoTrueDefaultClient(
-                url = url,
+                url = con.getString(R.string.supabase_url_auth),
                 headers = mapOf("Authorization" to token, "apiKey" to context.getString(R.string.AnonKey_Supabase))
             )
         } else {
             GoTrueDefaultClient(
-                url = url,
+                url = con.getString(R.string.supabase_url_auth),
                 headers = mapOf("Authorization" to "foo", "apiKey" to context.getString(R.string.AnonKey_Supabase))
             )
         }
@@ -66,7 +61,16 @@ class SBUserManager (con: Context){
      */
     fun refreshToken() {
 
-        val refreshTkn = getRefreshToken()
+        val cursor: Cursor = db.rawQuery("SELECT * FROM CurrentToken", null)
+
+        val refreshTkn = if (cursor.moveToFirst()) {
+            cursor.getString(2)
+        } else {
+            null
+        }
+
+        cursor.close()
+
         if (refreshTkn != null) {
 
             val result = goTrueClient.refreshAccessToken(refreshTkn)
@@ -86,7 +90,7 @@ class SBUserManager (con: Context){
             Log.d(":::", "Token refreshed successfully")
 
             goTrueClient = GoTrueDefaultClient(
-                url = url,
+                url = context.getString(R.string.supabase_url_auth),
                 headers = mapOf("Authorization" to result.accessToken, "apiKey" to context.getString(R.string.AnonKey_Supabase))
             )
         }
@@ -110,56 +114,22 @@ class SBUserManager (con: Context){
     }
 
     /**
-     * Method that returns the current refresh token saved in the database.
-     */
-    private fun getRefreshToken(): String? {
-        val cursor: Cursor = db.rawQuery("SELECT * FROM CurrentToken", null)
-
-        if (cursor.moveToFirst()) {
-            val result = cursor.getString(2)
-            cursor.close()
-            return result
-
-        }
-        cursor.close()
-        return null
-
-    }
-
-    /**
      * Method that receives an email and a password and log in with them.
      */
     fun signIn(email: String, password: String) {
 
         val result = goTrueClient.signInWithEmail(email, password)
-
         val tokenData = ContentValues()
 
         try {
 
-            if (getToken() == null) {
+            tokenData.put("id", 0)
+            tokenData.put("user_token", result.accessToken)
+            tokenData.put("refresh_token", result.refreshToken)
 
-                tokenData.put("id", 0)
-                tokenData.put("user_token", result.accessToken)
-                tokenData.put("refresh_token", result.refreshToken)
-
-                db.beginTransaction()
-                db.insert("CurrentToken", null, tokenData)
-                db.setTransactionSuccessful()
-
-            } else {
-
-                tokenData.put("user_token", result.accessToken)
-                tokenData.put("refresh_token", result.refreshToken)
-
-                db.beginTransaction()
-                val conf = db.update("CurrentToken", tokenData, "id = 0", null)
-                if(conf == 0) {
-                    Log.d(":::", "FUCK YOU ANDROID")
-                }
-                db.setTransactionSuccessful()
-
-            }
+            db.beginTransaction()
+            db.insert("CurrentToken", null, tokenData)
+            db.setTransactionSuccessful()
 
         } catch (e: SQLException) {
             e.printStackTrace()
@@ -168,14 +138,9 @@ class SBUserManager (con: Context){
             db.endTransaction()
         }
 
-        val currentToken = getToken()
-
-        if (currentToken == result.accessToken) {
-            Log.d(":::", "Token actualizado correctamente")
-        }
         goTrueClient = GoTrueDefaultClient(
-            url = url,
-            headers = mapOf("Authorization" to currentToken!!,
+            url = context.getString(R.string.supabase_url_auth),
+            headers = mapOf("Authorization" to result.accessToken,
                 "apiKey" to context.getString(R.string.AnonKey_Supabase))
         )
         Log.d(":::", "Cliente actualizado correctamente")
@@ -202,7 +167,7 @@ class SBUserManager (con: Context){
             }
             """
 
-        val request = Request.Builder().url("$url/signup").post(postBody.toRequestBody(markdownMediaType))
+        val request = Request.Builder().url("${context.getString(R.string.supabase_url_auth)}/signup").post(postBody.toRequestBody(markdownMediaType))
             .addHeader("apikey", context.getString(R.string.AnonKey_Supabase))
             .addHeader("Content-Type", "application/json").build()
 
@@ -239,7 +204,7 @@ class SBUserManager (con: Context){
 
         val token = getToken() ?: return null
 
-        val request = Request.Builder().url("$url/user").get()
+        val request = Request.Builder().url("${context.getString(R.string.supabase_url_auth)}/user").get()
             .addHeader("apikey", context.getString(R.string.AnonKey_Supabase))
             .addHeader("Authorization", "Bearer $token").build()
 
@@ -262,13 +227,12 @@ class SBUserManager (con: Context){
      * Method that logs out current user.
      */
     fun signOut() {
-
-        val token = getToken()
-        if (token != null) {
-            goTrueClient.signOut(token)
-            db.delete("CurrentToken", "id = 0", null)
+        try {
+            goTrueClient.signOut(getToken()?: "")
+        } catch (e: GoTrueHttpException) {
+        } finally {
+            deleteLocalToken()
         }
-
     }
 
     /**
@@ -300,14 +264,12 @@ class SBUserManager (con: Context){
 
     fun validToken() : Boolean {
         return if(loggedIn()) {
-
             try {
                 if(getUserId() != null) {return true}
                 false
             } catch (io: IOException) {
                 false
             }
-
         } else {
             false
         }
@@ -319,6 +281,4 @@ class SBUserManager (con: Context){
  * Reviews -> en lo que seria el activity de juego
  * Fragment con recycler de amigos
  * Boton de añadir/modificar juego en vez de solo añadir o quitar te deja seleccionar estado.
- *
- * Hay token -> Llamada para pillar usuario por token -> refreshToken -> Elimina token db
 */

@@ -235,7 +235,7 @@ class SearchFragment : Fragment() {
         val dbManager = usrManager.getDBManager()
         var finalData = sortedData
         if(dbManager != null) {
-            val userData = dbManager.getLibraryByUser(usrManager.getUserId()!!)
+            val userData = dbManager.getLibraryByUserFilteredByStatus(usrManager.getUserId()!!, StatusEnum.values().find { it.value == "" })
             finalData =  datos.map { item ->
                 val temp = userData?.find { item2 -> item.id == item2.game_id.toInt() }
                 if (temp != null) {

@@ -21,31 +21,26 @@ import java.util.*
  */
 class SupabaseDBManager (con : Context, token: String){
 
-    //Internal phone database
-    private val db: SQLiteDatabase
+    //Internal mobile phone database
+    private val db: SQLiteDatabase = SQLiteDatabase.openOrCreateDatabase(con.getDatabasePath("MyVCdb.db"), null)
     //Class to facilitate operations with JSON documents.
     private val gson : Gson
-    //Main application context.
-    private val context: Context = con
     //Client of PostgREST-kt library.
     private val postgrestClient: PostgrestDefaultClient
-    //Base url for CRUD requests.
-    private val url = "https://hdwsktohrhulukpzmike.supabase.co/rest/v1"
 
     //Initialise the variables of the class when it is instanced.
     init {
 
         /**
-         * Define the database and table that is going to be used, initialise
+         * Define the table that is going to be used, initialise
          * the PostgREST and GSON clients.
          */
-        db = SQLiteDatabase.openOrCreateDatabase(context.getDatabasePath("MyVCdb.db"), null)
         db.execSQL("CREATE TABLE IF NOT EXISTS CurrentToken(id NUMBER PRIMARY KEY, user_token VARCHAR, refresh_token VARCHAR);")
         postgrestClient = PostgrestDefaultClient(
-            uri = URI(url),
+            uri = URI(con.getString(R.string.supabase_url_rest)),
             headers = mapOf(
                 "Authorization" to "Bearer $token",
-                "apikey" to context.getString(R.string.AnonKey_Supabase),
+                "apikey" to con.getString(R.string.AnonKey_Supabase),
                 "Content-Type" to "application/json"
             )
         )
@@ -165,23 +160,6 @@ class SupabaseDBManager (con : Context, token: String){
 
         Log.d(":::", "Delete Status: " + result.status)
 
-    }
-
-    /**
-     * Method that returns the library registers of an specific user.
-     */
-    fun getLibraryByUser(userid : String) : List<LibrarySB>?{
-        val userID = UUID.fromString(userid)
-
-        val response = postgrestClient.from<LibrarySB>("library")
-                .select().eq("user_id", userID).execute()
-
-        if(response.status == 200) {
-            val itemType = object : TypeToken<List<LibrarySB>>() {}.type
-            return gson.fromJson(response.body, itemType)
-        }
-
-        return null
     }
 
     /**
