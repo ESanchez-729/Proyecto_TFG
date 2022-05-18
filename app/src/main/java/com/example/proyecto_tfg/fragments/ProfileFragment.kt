@@ -1,6 +1,5 @@
 package com.example.proyecto_tfg.fragments
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -14,17 +13,14 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.R
-import com.example.proyecto_tfg.activities.LoginActivity
 import com.example.proyecto_tfg.enums.StatusEnum
-import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.models.ProfileSB
 import com.example.proyecto_tfg.util.SBUserManager
 import com.makeramen.roundedimageview.RoundedImageView
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import io.supabase.gotrue.http.GoTrueHttpException
+import kotlinx.coroutines.*
+import java.io.IOException
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -83,32 +79,53 @@ class ProfileFragment : Fragment() {
 
             val userManager = SBUserManager(context)
             if(userManager.loggedIn()) {
-                val dbManager = userManager.getDBManager()
-                currentProfile = dbManager?.getUserDataById(userManager.getUserId()!!)!!
+                try {
 
-                withContext(Dispatchers.Main) {
-                    Picasso.get().load(currentProfile.avatar_url).resize(80, 80).into(userImage)
-                    userName.text = currentProfile.username
-                    userLocation.text = dbManager.getCountryNameById(currentProfile.country!!.toInt())
-                    userDescription.text = currentProfile.description
+                    val dbManager = userManager.getDBManager()
+                    currentProfile = dbManager?.getUserDataById(userManager.getUserId()!!)!!
 
-                    for (item in libraryList){
+                    withContext(Dispatchers.Main) {
+                        Picasso.get().load(currentProfile.avatar_url).resize(80, 80).into(userImage)
+                        userName.text = currentProfile.username
+                        userLocation.text = dbManager.getCountryNameById(currentProfile.country!!.toInt())
+                        userDescription.text = currentProfile.description
 
-                        item.value.setOnClickListener(View.OnClickListener {
-                            Toast.makeText(context, item.key, Toast.LENGTH_SHORT).show()
-                            replaceFragment(LibraryFragment.newInstance(item.key, currentProfile.user_id))
-                        })
+                        for (item in libraryList){
+
+                            item.value.setOnClickListener {
+                                Toast.makeText(context, item.key, Toast.LENGTH_SHORT).show()
+                                replaceFragment(
+                                    LibraryFragment.newInstance(
+                                        item.key,
+                                        currentProfile.user_id
+                                    )
+                                )
+                            }
+
+                        }
+
+                        socialReviews.setOnClickListener {
+                            Toast.makeText(context, "Reviews", Toast.LENGTH_SHORT).show()
+                        }
+
+                        socialFriends.setOnClickListener {
+                            Toast.makeText(context, "Friends", Toast.LENGTH_SHORT).show()
+                        }
 
                     }
 
-                    socialReviews.setOnClickListener(View.OnClickListener {
-                        Toast.makeText(context, "Reviews", Toast.LENGTH_SHORT).show()
-                    })
-
-                    socialFriends.setOnClickListener(View.OnClickListener {
-                        Toast.makeText(context, "Friends", Toast.LENGTH_SHORT).show()
-                    })
-
+                } catch (e : GoTrueHttpException) {
+                    Toast.makeText(context, context.getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
+                } catch (e : IOException) {
+                    try {
+                        userManager.refreshToken()
+                    } catch (e : IOException) {
+                        userManager.deleteLocalToken()
+                    } finally {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            recharge()
+                        }
+                    }
                 }
             }
         }
@@ -125,7 +142,7 @@ class ProfileFragment : Fragment() {
 
             R.id.profile_login -> {
 
-                val test = SBUserManager(activity as MainActivity).signOut()
+                SBUserManager(activity as MainActivity).signOut()
                 (activity as MainActivity).recreate()
                 true
             }
@@ -143,15 +160,11 @@ class ProfileFragment : Fragment() {
 
     }
 
+    private fun recharge() {
+        (activity as MainActivity).recreate()
+    }
+
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment NewsFragment.
-         */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =

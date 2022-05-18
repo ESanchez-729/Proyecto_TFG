@@ -2,18 +2,18 @@ package com.example.proyecto_tfg.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
-
 import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.util.SBUserManager
 import android.content.Intent
 import com.example.proyecto_tfg.MainActivity
+import io.supabase.gotrue.GoTrueClient
+import io.supabase.gotrue.GoTrueDefaultClient
 import io.supabase.gotrue.http.GoTrueHttpException
-
+import io.supabase.gotrue.types.GoTrueSettings
 
 class LoginActivity : AppCompatActivity() {
 
@@ -30,36 +30,35 @@ class LoginActivity : AppCompatActivity() {
 
         val usrManager = SBUserManager(this)
 
-        loginBtn.setOnClickListener(View.OnClickListener {
-            if(passwordText.text.trim() != "" && emailText.text.trim() != "") {
+        loginBtn.setOnClickListener {
+            if (passwordText.text.trim() != "" && emailText.text.trim() != "") {
                 try {
                     usrManager.signIn(emailText.text.toString(), passwordText.text.toString())
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
                 } catch (e: GoTrueHttpException) {
-                    Toast.makeText(this, getString(R.string.err_invalid_credentials), Toast.LENGTH_LONG).show()
+                    Toast.makeText(
+                        this,
+                        getString(R.string.err_invalid_credentials),
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             } else {
-                Toast.makeText(this, getString(R.string.err_invalid_credentials), Toast.LENGTH_LONG).show()
+                Toast.makeText(this, getString(R.string.err_invalid_credentials), Toast.LENGTH_LONG)
+                    .show()
             }
-        })
+        }
 
-        registerBtn.setOnClickListener(View.OnClickListener {
+        registerBtn.setOnClickListener {
             val intent = Intent(this, RegisterActivity::class.java)
             startActivity(intent)
-        })
-
-        googleBtn.setOnClickListener(View.OnClickListener {
-            googleLogin()
-        })
+        }
 
         //usrManager.signUp("supatestmyvc@gmail.com", "potato200")
         //usrManager.signIn("supatestmyvc@gmail.com", "potato200")
 
     }
 
-    private fun googleLogin() {
-        TODO("Not yet implemented")
-    }
+    override fun onBackPressed() {}
 
 }

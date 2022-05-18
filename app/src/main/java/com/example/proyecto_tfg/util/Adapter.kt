@@ -1,7 +1,6 @@
 package com.example.proyecto_tfg.util
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,14 +8,15 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.models.GameSB
 import com.example.proyecto_tfg.models.LibrarySB
 import com.squareup.picasso.Picasso
+import io.supabase.gotrue.http.GoTrueHttpException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -81,95 +81,133 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
             }
         }
 
-//        viewHolder.addButton.setOnClickListener(View.OnClickListener {
-//
-//            viewHolder.addButton.isEnabled = false
-//            if(dataSet[position].status == StatusEnum.NOT_ADDED.value) {
-//
-//                CoroutineScope(Dispatchers.IO).launch {
-//                    addRegister(position)
-//                    dataSet[position].status = StatusEnum.PLAYING.value
-//                    withContext(Dispatchers.Main){
-//                        viewHolder.removeButton.isEnabled = true
-//                        notifyItemChanged(position)
-//                    }
-//                }
-//            }
-//        })
-//
-//        viewHolder.removeButton.setOnClickListener(View.OnClickListener {
-//            viewHolder.removeButton.isEnabled = false
-//                try {
-//                    if(dataSet[position].status != StatusEnum.NOT_ADDED.value) {
-//
-//                        CoroutineScope(Dispatchers.IO).launch {
-//                            try {
-//                                removeRegister(position, currentId)
-//                                if(dissapearWhenDeleted) {
-//                                    dataSet.removeAt(position)
-//                                    withContext(Dispatchers.Main){
-//                                        notifyItemRemoved(position)
-//                                        notifyItemChanged(position)
-//                                    }
-//                                } else {
-//                                    dataSet[position].status = StatusEnum.NOT_ADDED.value
-//                                    withContext(Dispatchers.Main){
-//                                        viewHolder.addButton.isEnabled = true
-//                                        notifyItemChanged(position)
-//                                    }
-//                                }
-//                            } catch (e: IndexOutOfBoundsException) {}
-//                        }
-//                    }
-//                } catch (e: IndexOutOfBoundsException) {}
-//        })
+        when(StatusEnum.values().find { it.value ==  dataSet[position].status}) {
+
+            StatusEnum.NOT_ADDED -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(null,null,null,null)
+            
+            StatusEnum.COMPLETED -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    ResourcesCompat.getDrawable(context.resources,R.drawable.status_circle_completed, null)
+                    ,null,null,null)
+
+            StatusEnum.PLAYING -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    ResourcesCompat.getDrawable(context.resources,R.drawable.status_circle_playing, null)
+                    ,null,null,null)
+
+            StatusEnum.DROPPED -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    ResourcesCompat.getDrawable(context.resources,R.drawable.status_circle_dropped, null)
+                    ,null,null,null)
+
+            StatusEnum.ON_HOLD -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    ResourcesCompat.getDrawable(context.resources,R.drawable.status_circle_onhold, null)
+                    ,null,null,null)
+
+            StatusEnum.PLAN_TO_PLAY -> viewHolder.status
+                .setCompoundDrawablesRelativeWithIntrinsicBounds(
+                    ResourcesCompat.getDrawable(context.resources,R.drawable.status_circle_plantoplay, null)
+                    ,null,null,null)
+
+        }
+
+        viewHolder.addButton.setOnClickListener {
+
+            try {
+                if (dataSet[position].status == StatusEnum.NOT_ADDED.value) {
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        addRegister(position)
+                        dataSet[position].status = StatusEnum.PLAYING.value
+                        withContext(Dispatchers.Main) {
+                            notifyItemChanged(position)
+                        }
+                    }
+                }
+            } catch (e : GoTrueHttpException) {
+                Toast.makeText(context, context.getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
+            }
+
+
+        }
+
+        viewHolder.removeButton.setOnClickListener {
+            try {
+                if (dataSet[position].status != StatusEnum.NOT_ADDED.value) {
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            removeRegister(currentId)
+                            if (dissapearWhenDeleted) {
+                                dataSet.removeAt(position)
+                                withContext(Dispatchers.Main) {
+                                    notifyItemRemoved(position)
+                                    notifyItemChanged(position)
+                                }
+                            } else {
+                                dataSet[position].status = StatusEnum.NOT_ADDED.value
+                                withContext(Dispatchers.Main) {
+                                    notifyItemChanged(position)
+                                }
+                            }
+                        } catch (e: IndexOutOfBoundsException) {
+                        }
+                    }
+                }
+            } catch (e: IndexOutOfBoundsException) {
+            } catch (e : GoTrueHttpException) {
+                Toast.makeText(context, context.getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
+            }
+        }
 
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     override fun getItemCount() = dataSet.size
 
-//    private fun addRegister(position : Int) {
-//
-//        val usrManager = SBUserManager(context)
-//        val dbManager = usrManager.getDBManager()
-//
-//        val currentGame = dataSet[position]
-//        val currentSBGame = GameSB(
-//            game_id = currentGame.id,
-//            name = currentGame.title,
-//            cover = currentGame.image,
-//            platforms = currentGame.platform,
-//            total_rating = currentGame.score)
-//
-//        if (dbManager?.getGameById(currentSBGame.game_id) == null) {
-//            dbManager?.insertGameIntoDB(currentSBGame)
-//        }
-//
-//        dbManager?.addGame(
-//            LibrarySB(
-//                user_id = usrManager.getUserId()!!,
-//                game_id = currentSBGame.game_id,
-//                status = StatusEnum.PLAYING,
-//                review = "",
-//                score = -1,
-//                recommended = false
-//            )
-//        )
-//    }
+    private fun addRegister(position : Int) {
 
-//    private fun removeRegister(position : Int, id : Int) {
-//
-//        val usrManager = SBUserManager(context)
-//        val dbManager = usrManager.getDBManager()
-//        val userId = usrManager.getUserId()
-//
-//        if (userId == null) {
-//            Toast.makeText(context, "Error al eliminar el registro.", Toast.LENGTH_LONG).show()
-//        } else {
-//            dbManager?.removeGame(userId, id)
-//        }
-//
-//    }
+        val usrManager = SBUserManager(context)
+        val dbManager = usrManager.getDBManager()
+
+        val currentGame = dataSet[position]
+        val currentSBGame = GameSB(
+            game_id = currentGame.id,
+            name = currentGame.title,
+            cover = currentGame.image,
+            platforms = currentGame.platform,
+            total_rating = currentGame.score)
+
+        if (dbManager?.getGameById(currentSBGame.game_id) == null) {
+            dbManager?.insertGameIntoDB(currentSBGame)
+        }
+
+        dbManager?.addGame(
+            LibrarySB(
+                user_id = usrManager.getUserId()!!,
+                game_id = currentSBGame.game_id,
+                status = StatusEnum.PLAYING,
+                review = "",
+                score = -1,
+                recommended = false
+            )
+        )
+    }
+
+    private fun removeRegister( id : Int) {
+
+        val usrManager = SBUserManager(context)
+        val dbManager = usrManager.getDBManager()
+        val userId = usrManager.getUserId()
+
+        if (userId == null) {
+            Toast.makeText(context, "Error al eliminar el registro.", Toast.LENGTH_LONG).show()
+        } else {
+            dbManager?.removeGame(userId, id)
+        }
+
+    }
 
 }
