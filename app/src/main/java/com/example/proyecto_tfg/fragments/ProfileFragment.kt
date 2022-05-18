@@ -20,6 +20,7 @@ import com.makeramen.roundedimageview.RoundedImageView
 import com.squareup.picasso.Picasso
 import io.supabase.gotrue.http.GoTrueHttpException
 import kotlinx.coroutines.*
+import java.io.IOException
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -115,6 +116,16 @@ class ProfileFragment : Fragment() {
 
                 } catch (e : GoTrueHttpException) {
                     Toast.makeText(context, context.getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
+                } catch (e : IOException) {
+                    try {
+                        userManager.refreshToken()
+                    } catch (e : IOException) {
+                        userManager.deleteLocalToken()
+                    } finally {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            recharge()
+                        }
+                    }
                 }
             }
         }
@@ -147,6 +158,10 @@ class ProfileFragment : Fragment() {
         fragmentTransaction.replace(R.id.main_frame_layout, fragment)
         fragmentTransaction.commit()
 
+    }
+
+    private fun recharge() {
+        (activity as MainActivity).recreate()
     }
 
     companion object {

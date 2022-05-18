@@ -6,13 +6,14 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Toast
-
 import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.util.SBUserManager
 import android.content.Intent
 import com.example.proyecto_tfg.MainActivity
+import io.supabase.gotrue.GoTrueClient
+import io.supabase.gotrue.GoTrueDefaultClient
 import io.supabase.gotrue.http.GoTrueHttpException
-import org.json.JSONObject
+import io.supabase.gotrue.types.GoTrueSettings
 
 class LoginActivity : AppCompatActivity() {
 
@@ -53,30 +54,11 @@ class LoginActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        googleBtn.setOnClickListener {
-            googleLogin()
-        }
-
         //usrManager.signUp("supatestmyvc@gmail.com", "potato200")
         //usrManager.signIn("supatestmyvc@gmail.com", "potato200")
 
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        val usrManager = SBUserManager(this)
-
-        if (usrManager.loggedIn()){
-            Toast.makeText(this, getString(R.string.err_already_logged_in), Toast.LENGTH_LONG).show()
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-        }
-
-    }
-
-    private fun googleLogin() {
-        TODO("Not yet implemented, ehe")
-    }
+    override fun onBackPressed() {}
 
 }

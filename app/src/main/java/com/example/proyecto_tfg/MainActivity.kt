@@ -150,6 +150,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {}
+
     override fun onDestroy() {
         super.onDestroy()
         SBUserManager(this).closeDB()
