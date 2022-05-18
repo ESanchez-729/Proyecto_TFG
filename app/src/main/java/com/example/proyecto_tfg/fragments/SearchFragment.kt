@@ -223,7 +223,6 @@ class SearchFragment : Fragment() {
         val sortedData : MutableList<GameItem> = when(searchSort) {
 
             getString(R.string.menu_option1) -> datos.sortedWith(compareBy {it.score}).toMutableList()
-            getString(R.string.menu_option2) -> datos
             getString(R.string.menu_option3) -> datos.sortedWith(compareBy {it.title}).toMutableList()
             else -> datos
 
@@ -312,7 +311,7 @@ class SearchFragment : Fragment() {
     //Método que comprueba la opción de ordenación seleccionada y la coloca en la variable searchSort.
     private fun sortOptions() {
 
-        val choices = arrayOf (getString(R.string.menu_option1), getString(R.string.menu_option2), getString(R.string.menu_option3))
+        val choices = arrayOf (getString(R.string.menu_option1), getString(R.string.menu_option3))
         var currentOption = ""
 
         AlertDialog.Builder(activity as MainActivity)
@@ -336,7 +335,7 @@ class SearchFragment : Fragment() {
     //Método que comprueba la opción de filtrado seleccionada y la coloca en la variable searchFilter.
     private fun filterOptions() {
 
-        val choices = arrayOf (getString(R.string.filter_option1), getString(R.string.filter_option2), getString(R.string.filter_option3), getString(R.string.filter_option4), getString(R.string.filter_option5), getString(R.string.filter_option6), getString(R.string.filter_option7), getString(R.string.filter_option8))
+        val choices = arrayOf (getString(R.string.filter_option1), getString(R.string.filter_option2))
         var currentOption = ""
 
         AlertDialog.Builder(activity as MainActivity)
@@ -355,12 +354,7 @@ class SearchFragment : Fragment() {
 
                     getString(R.string.filter_option1) -> FilterContent(true, "where total_rating >= 50;")
                     getString(R.string.filter_option2) -> FilterContent(true, "where total_rating <= 50;")
-                    getString(R.string.filter_option3) -> FilterContent(false, "")
-                    getString(R.string.filter_option4) -> FilterContent(false, "")
-                    getString(R.string.filter_option5) -> FilterContent(false, "")
-                    getString(R.string.filter_option6) -> FilterContent(false, "")
-                    getString(R.string.filter_option7) -> FilterContent(false, "")
-                    getString(R.string.filter_option8) -> FilterContent(false, "")
+
                     else -> FilterContent(false, "")
 
                 }.also { searchFilter = it }

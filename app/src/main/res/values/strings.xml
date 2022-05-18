@@ -25,8 +25,8 @@
     <string name="filter_option8">Status: Not Added</string>
     <string name="add_button">Add</string>
     <string name="remove_button">Remove</string>
-    <string name="logout_button">Logout</string>
-    <string name="login_button">Login</string>
+    <string name="logout_button">Log out</string>
+    <string name="login_button">Log in</string>
     <string name="register_button">Register</string>
     <string name="pruebaxD">Albion Online es un mmorpg no lineal, en el que escribes tu propia historia</string>
     <string name="completed_status">Completed</string>
@@ -54,4 +54,9 @@
     <string name="err_unknown_restart_opt">An error has occurred, please restart the app and try again</string>
     <string name="supabase_url_rest">https://hdwsktohrhulukpzmike.supabase.co/rest/v1</string>
     <string name="supabase_url_auth">https://hdwsktohrhulukpzmike.supabase.co/auth/v1</string>
+    <string name="friend_search">Search for friends</string>
+    <string name="edit_profile">Edit profile</string>
+    <string name="country_label">Select a country</string>
+    <string name="save_edit">Save changes</string>
+    <string name="description">Description</string>
 </resources>

@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:title="@string/edit_profile"
+        android:id="@+id/profile_edit"/>
+    <item
+        android:title="@string/friend_search"
+        android:id="@+id/profile_searchFriends"/>
+    <item
         android:title="@string/notifications"
         android:id="@+id/profile_notifications"/>
     <item
         android:title="@string/logout_button"
-        android:id="@+id/profile_login" />
+        android:id="@+id/profile_logout" />
 </menu>

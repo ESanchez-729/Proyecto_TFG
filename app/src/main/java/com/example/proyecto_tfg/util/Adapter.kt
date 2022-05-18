@@ -75,7 +75,7 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
             viewHolder.score.text = dataSet[position].score.toString()
             when(dataSet[position].score) {
 
-                in 1..29 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_red)
+                in 0..29 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_red)
                 in 30..60 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_yellow)
                 in 61..100 -> viewHolder.scoreRating.setBackgroundResource(R.drawable.rating_circle_green)
             }

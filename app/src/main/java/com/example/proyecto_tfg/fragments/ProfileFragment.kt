@@ -69,7 +69,6 @@ class ProfileFragment : Fragment() {
         libraryList[StatusEnum.ON_HOLD.value] = view.findViewById(R.id.onHoldGamesCard)
         libraryList[StatusEnum.PLAN_TO_PLAY.value] = view.findViewById(R.id.planToPlayGamesCard)
 
-        val socialReviews : CardView = view.findViewById(R.id.reviewsCard)
         val socialFriends : CardView = view.findViewById(R.id.friendsCard)
 
         var currentProfile: ProfileSB
@@ -104,10 +103,6 @@ class ProfileFragment : Fragment() {
 
                         }
 
-                        socialReviews.setOnClickListener {
-                            Toast.makeText(context, "Reviews", Toast.LENGTH_SHORT).show()
-                        }
-
                         socialFriends.setOnClickListener {
                             Toast.makeText(context, "Friends", Toast.LENGTH_SHORT).show()
                         }
@@ -140,7 +135,7 @@ class ProfileFragment : Fragment() {
 
         return when (item.itemId) {
 
-            R.id.profile_login -> {
+            R.id.profile_logout -> {
 
                 SBUserManager(activity as MainActivity).signOut()
                 (activity as MainActivity).recreate()
