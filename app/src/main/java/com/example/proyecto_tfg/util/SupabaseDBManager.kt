@@ -12,7 +12,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.supabase.postgrest.PostgrestDefaultClient
 import org.json.JSONArray
-import org.json.JSONObject
 import java.net.URI
 import java.text.Normalizer
 import java.util.*
@@ -22,31 +21,26 @@ import java.util.*
  */
 class SupabaseDBManager (con : Context, token: String){
 
-    //Internal phone database
-    private val db: SQLiteDatabase
+    //Internal mobile phone database
+    private val db: SQLiteDatabase = SQLiteDatabase.openOrCreateDatabase(con.getDatabasePath("MyVCdb.db"), null)
     //Class to facilitate operations with JSON documents.
     private val gson : Gson
-    //Main application context.
-    private val context: Context = con
     //Client of PostgREST-kt library.
     private val postgrestClient: PostgrestDefaultClient
-    //Base url for CRUD requests.
-    private val url = "https://hdwsktohrhulukpzmike.supabase.co/rest/v1"
 
     //Initialise the variables of the class when it is instanced.
     init {
 
         /**
-         * Define the database and table that is going to be used, initialise
+         * Define the table that is going to be used, initialise
          * the PostgREST and GSON clients.
          */
-        db = SQLiteDatabase.openOrCreateDatabase(context.getDatabasePath("MyVCdb.db"), null)
         db.execSQL("CREATE TABLE IF NOT EXISTS CurrentToken(id NUMBER PRIMARY KEY, user_token VARCHAR, refresh_token VARCHAR);")
         postgrestClient = PostgrestDefaultClient(
-            uri = URI(url),
+            uri = URI(con.getString(R.string.supabase_url_rest)),
             headers = mapOf(
                 "Authorization" to "Bearer $token",
-                "apikey" to context.getString(R.string.AnonKey_Supabase),
+                "apikey" to con.getString(R.string.AnonKey_Supabase),
                 "Content-Type" to "application/json"
             )
         )
@@ -89,7 +83,7 @@ class SupabaseDBManager (con : Context, token: String){
     fun insertGameIntoDB(game : GameSB) {
 
         Log.d(":::", Gson().toJson(game))
-        game.name = stripAccents(game.name)?: game.name
+        game.name = stripAccents(game.name)
 
         val result = postgrestClient.from<GameSB>("game")
             .insert(game, true)
@@ -169,23 +163,6 @@ class SupabaseDBManager (con : Context, token: String){
     }
 
     /**
-     * Method that returns the library registers of an specific user.
-     */
-    fun getLibraryByUser(userid : String) : List<LibrarySB>?{
-        val userID = UUID.fromString(userid)
-
-        var response = postgrestClient.from<LibrarySB>("library")
-                .select().eq("user_id", userID).execute()
-
-        if(response.status == 200) {
-            val itemType = object : TypeToken<List<LibrarySB>>() {}.type
-            return gson.fromJson(response.body, itemType)
-        }
-
-        return null
-    }
-
-    /**
      * Method that returns the library registers of an specific user and with an specific status.
      */
     fun getLibraryByUserFilteredByStatus(userid: String, status : StatusEnum?) : List<LibrarySB>? {
@@ -215,7 +192,7 @@ class SupabaseDBManager (con : Context, token: String){
     fun addProfile(profile: ProfileSB) {
 
         Log.d(":::", Gson().toJson(profile))
-        val request = postgrestClient.from<ProfileSB>("profile")
+        postgrestClient.from<ProfileSB>("profile")
             .insert(profile).execute()
 
     }
@@ -232,24 +209,9 @@ class SupabaseDBManager (con : Context, token: String){
         return objectResult.get("name").toString()
     }
 
-    /**
-     * Method that returns the reviews of an user.
-     * Not yet implemented
-     */
-    fun getReviewsByUserId() {
-        TODO()
-        //Consultar reviews por user_id (tal vez)
-    }
-
     private fun stripAccents(s: String): String {
-        var current = s
-        current = Normalizer.normalize(s, Normalizer.Form.NFD)
+        var current: String = Normalizer.normalize(s, Normalizer.Form.NFD)
         current = current.replace("[\\p{InCombiningDiacriticalMarks}]".toRegex(), "")
-
-        //current = current.replace('-', ' ')
-        //current = current.replace('\\', ' ')
-        //current = current.replace('\'', ' ')
-        //current = current.replace(':', ' ')
 
         return current
     }
