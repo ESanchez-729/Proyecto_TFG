@@ -81,95 +81,95 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
             }
         }
 
-        viewHolder.addButton.setOnClickListener(View.OnClickListener {
-
-            viewHolder.addButton.isEnabled = false
-            if(dataSet[position].status == StatusEnum.NOT_ADDED.value) {
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    addRegister(position)
-                    dataSet[position].status = StatusEnum.PLAYING.value
-                    withContext(Dispatchers.Main){
-                        viewHolder.removeButton.isEnabled = true
-                        notifyItemChanged(position)
-                    }
-                }
-            }
-        })
-
-        viewHolder.removeButton.setOnClickListener(View.OnClickListener {
-            viewHolder.removeButton.isEnabled = false
-                try {
-                    if(dataSet[position].status != StatusEnum.NOT_ADDED.value) {
-
-                        CoroutineScope(Dispatchers.IO).launch {
-                            try {
-                                removeRegister(position, currentId)
-                                if(dissapearWhenDeleted) {
-                                    dataSet.removeAt(position)
-                                    withContext(Dispatchers.Main){
-                                        notifyItemRemoved(position)
-                                        notifyItemChanged(position)
-                                    }
-                                } else {
-                                    dataSet[position].status = StatusEnum.NOT_ADDED.value
-                                    withContext(Dispatchers.Main){
-                                        viewHolder.addButton.isEnabled = true
-                                        notifyItemChanged(position)
-                                    }
-                                }
-                            } catch (e: IndexOutOfBoundsException) {}
-                        }
-                    }
-                } catch (e: IndexOutOfBoundsException) {}
-        })
+//        viewHolder.addButton.setOnClickListener(View.OnClickListener {
+//
+//            viewHolder.addButton.isEnabled = false
+//            if(dataSet[position].status == StatusEnum.NOT_ADDED.value) {
+//
+//                CoroutineScope(Dispatchers.IO).launch {
+//                    addRegister(position)
+//                    dataSet[position].status = StatusEnum.PLAYING.value
+//                    withContext(Dispatchers.Main){
+//                        viewHolder.removeButton.isEnabled = true
+//                        notifyItemChanged(position)
+//                    }
+//                }
+//            }
+//        })
+//
+//        viewHolder.removeButton.setOnClickListener(View.OnClickListener {
+//            viewHolder.removeButton.isEnabled = false
+//                try {
+//                    if(dataSet[position].status != StatusEnum.NOT_ADDED.value) {
+//
+//                        CoroutineScope(Dispatchers.IO).launch {
+//                            try {
+//                                removeRegister(position, currentId)
+//                                if(dissapearWhenDeleted) {
+//                                    dataSet.removeAt(position)
+//                                    withContext(Dispatchers.Main){
+//                                        notifyItemRemoved(position)
+//                                        notifyItemChanged(position)
+//                                    }
+//                                } else {
+//                                    dataSet[position].status = StatusEnum.NOT_ADDED.value
+//                                    withContext(Dispatchers.Main){
+//                                        viewHolder.addButton.isEnabled = true
+//                                        notifyItemChanged(position)
+//                                    }
+//                                }
+//                            } catch (e: IndexOutOfBoundsException) {}
+//                        }
+//                    }
+//                } catch (e: IndexOutOfBoundsException) {}
+//        })
 
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     override fun getItemCount() = dataSet.size
 
-    private fun addRegister(position : Int) {
+//    private fun addRegister(position : Int) {
+//
+//        val usrManager = SBUserManager(context)
+//        val dbManager = usrManager.getDBManager()
+//
+//        val currentGame = dataSet[position]
+//        val currentSBGame = GameSB(
+//            game_id = currentGame.id,
+//            name = currentGame.title,
+//            cover = currentGame.image,
+//            platforms = currentGame.platform,
+//            total_rating = currentGame.score)
+//
+//        if (dbManager?.getGameById(currentSBGame.game_id) == null) {
+//            dbManager?.insertGameIntoDB(currentSBGame)
+//        }
+//
+//        dbManager?.addGame(
+//            LibrarySB(
+//                user_id = usrManager.getUserId()!!,
+//                game_id = currentSBGame.game_id,
+//                status = StatusEnum.PLAYING,
+//                review = "",
+//                score = -1,
+//                recommended = false
+//            )
+//        )
+//    }
 
-        val usrManager = SBUserManager(context)
-        val dbManager = usrManager.getDBManager()
-
-        val currentGame = dataSet[position]
-        val currentSBGame = GameSB(
-            game_id = currentGame.id,
-            name = currentGame.title,
-            cover = currentGame.image,
-            platforms = currentGame.platform,
-            total_rating = currentGame.score)
-
-        if (dbManager?.getGameById(currentSBGame.game_id) == null) {
-            dbManager?.insertGameIntoDB(currentSBGame)
-        }
-
-        dbManager?.addGame(
-            LibrarySB(
-                user_id = usrManager.getUserId()!!,
-                game_id = currentSBGame.game_id,
-                status = StatusEnum.PLAYING,
-                review = "",
-                score = -1,
-                recommended = false
-            )
-        )
-    }
-
-    private fun removeRegister(position : Int, id : Int) {
-
-        val usrManager = SBUserManager(context)
-        val dbManager = usrManager.getDBManager()
-        val userId = usrManager.getUserId()
-
-        if (userId == null) {
-            Toast.makeText(context, "Error al eliminar el registro.", Toast.LENGTH_LONG).show()
-        } else {
-            dbManager?.removeGame(userId, id)
-        }
-
-    }
+//    private fun removeRegister(position : Int, id : Int) {
+//
+//        val usrManager = SBUserManager(context)
+//        val dbManager = usrManager.getDBManager()
+//        val userId = usrManager.getUserId()
+//
+//        if (userId == null) {
+//            Toast.makeText(context, "Error al eliminar el registro.", Toast.LENGTH_LONG).show()
+//        } else {
+//            dbManager?.removeGame(userId, id)
+//        }
+//
+//    }
 
 }

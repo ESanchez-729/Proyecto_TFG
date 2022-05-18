@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">My Videogame Collection</string>
     <string name="registration_text">Account registration</string>
+    <string name="notifications">Notifications</string>
     <string name="app_name_short">MyVC</string>
     <string name="profile_menu">Profile</string>
     <string name="search_menu">Search</string>
@@ -24,6 +25,7 @@
     <string name="filter_option8">Status: Not Added</string>
     <string name="add_button">Add</string>
     <string name="remove_button">Remove</string>
+    <string name="logout_button">Logout</string>
     <string name="login_button">Login</string>
     <string name="register_button">Register</string>
     <string name="pruebaxD">Albion Online es un mmorpg no lineal, en el que escribes tu propia historia</string>
