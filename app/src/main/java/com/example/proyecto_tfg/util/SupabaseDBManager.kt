@@ -11,7 +11,13 @@ import com.example.proyecto_tfg.models.ProfileSB
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.supabase.postgrest.PostgrestDefaultClient
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
+import org.json.JSONObject
+import java.io.IOException
 import java.net.URI
 import java.text.Normalizer
 import java.util.*
@@ -27,6 +33,10 @@ class SupabaseDBManager (con : Context, token: String){
     private val gson : Gson
     //Client of PostgREST-kt library.
     private val postgrestClient: PostgrestDefaultClient
+    //Main activity contexy
+    private val context : Context
+    //User token
+    private val currentToken : String
 
     //Initialise the variables of the class when it is instanced.
     init {
@@ -44,6 +54,8 @@ class SupabaseDBManager (con : Context, token: String){
                 "Content-Type" to "application/json"
             )
         )
+        context = con
+        currentToken = token
         gson = Gson()
     }
 
@@ -194,6 +206,56 @@ class SupabaseDBManager (con : Context, token: String){
         Log.d(":::", Gson().toJson(profile))
         postgrestClient.from<ProfileSB>("profile")
             .insert(profile).execute()
+
+    }
+
+    /**
+     * Method that updates the user profile.
+     */
+    fun updateProfile(profile: ProfileSB) {
+
+        val request = postgrestClient.from<ProfileSB>("profile")
+            .insert(profile, upsert = true).eq("user_id", profile.user_id).execute()
+        
+    }
+
+    /**
+     * Method that retrieves the names of specific images in the database.
+     */
+    fun getDefaultImages() : List<String> {
+
+        val okHttp = OkHttpClient()
+        val markdownMediaType = "application/json".toMediaType()
+
+        val postBody = """
+            {
+                "limit": 100,
+                "offset": 0,
+                "prefix": "default",
+                "sortBy": { "column": "name", "order": "asc" }
+            }
+            """
+
+        val request = Request.Builder().url(context.getString(R.string.supabase_url_images)).post(postBody.toRequestBody(markdownMediaType))
+            .addHeader("apikey", context.getString(R.string.AnonKey_Supabase))
+            .addHeader("Authorization", "Bearer $currentToken").build()
+
+        okHttp.newCall(request).execute().use { response ->
+
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+            val postResult : String = response.body?.string() ?: throw IOException("Data not found $response")
+
+            val result = JSONArray(postResult)
+            val resultArray = mutableListOf<String>()
+            for(i in 0 until result.length()) {
+                val imageResult = result.getJSONObject(i)
+                val imageName = imageResult.getString("name")
+                resultArray.add(imageName)
+            }
+            Log.d(":::", resultArray.toString())
+            return resultArray
+
+        }
 
     }
 

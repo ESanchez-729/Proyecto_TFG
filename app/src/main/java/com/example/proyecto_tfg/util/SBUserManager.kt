@@ -11,6 +11,7 @@ import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.models.ProfileSB
 import io.supabase.gotrue.GoTrueDefaultClient
 import io.supabase.gotrue.http.GoTrueHttpException
+import io.supabase.gotrue.types.GoTrueUserAttributes
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request

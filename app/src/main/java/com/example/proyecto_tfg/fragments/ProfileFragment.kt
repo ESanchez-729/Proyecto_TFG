@@ -1,5 +1,6 @@
 package com.example.proyecto_tfg.fragments
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -21,6 +22,13 @@ import com.squareup.picasso.Picasso
 import io.supabase.gotrue.http.GoTrueHttpException
 import kotlinx.coroutines.*
 import java.io.IOException
+import android.content.DialogInterface
+import android.media.Image
+import android.util.Log
+import android.widget.ImageButton
+import android.widget.ImageView
+import com.example.proyecto_tfg.util.SupabaseDBManager
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -81,13 +89,20 @@ class ProfileFragment : Fragment() {
                 try {
 
                     val dbManager = userManager.getDBManager()
-                    currentProfile = dbManager?.getUserDataById(userManager.getUserId()!!)!!
+                    val currentId = userManager.getUserId()!!
+                    currentProfile = dbManager?.getUserDataById(currentId)!!
 
                     withContext(Dispatchers.Main) {
                         Picasso.get().load(currentProfile.avatar_url).resize(80, 80).into(userImage)
                         userName.text = currentProfile.username
                         userLocation.text = dbManager.getCountryNameById(currentProfile.country!!.toInt())
                         userDescription.text = currentProfile.description
+
+                        userImage.setOnClickListener {
+                            if(currentProfile.user_id == currentId) {
+                                profilePicSelection(currentProfile, dbManager)
+                            }
+                        }
 
                         for (item in libraryList){
 
@@ -114,6 +129,8 @@ class ProfileFragment : Fragment() {
                 } catch (e : IOException) {
                     try {
                         userManager.refreshToken()
+                    } catch (e : IOException) {
+                        userManager.deleteLocalToken()
                     } catch (e : IOException) {
                         userManager.deleteLocalToken()
                     } finally {
@@ -152,6 +169,38 @@ class ProfileFragment : Fragment() {
         val fragmentTransaction : FragmentTransaction = fragmentManager.beginTransaction()
         fragmentTransaction.replace(R.id.main_frame_layout, fragment)
         fragmentTransaction.commit()
+
+    }
+
+    private fun profilePicSelection(profile : ProfileSB, dbManager: SupabaseDBManager) {
+
+        var selectedImage = ""
+
+        val pictureAlert: AlertDialog.Builder = AlertDialog.Builder(context)
+        val factory = LayoutInflater.from(context)
+        val selectionView: View = factory.inflate(R.layout.menu_profile_img_selection, null)
+        pictureAlert.setView(selectionView)
+        pictureAlert.setNegativeButton("Cancel") { dlg, _ -> dlg.dismiss() }
+        pictureAlert.setPositiveButton("Confirm") { dlg, _ ->
+            profile.avatar_url = selectedImage
+            Log.d(":::imgAtConfirm", profile.avatar_url)
+            dbManager.updateProfile(profile)
+            dlg.dismiss()
+            recharge()
+        }
+
+        val createdDialog = pictureAlert.create()
+        val images = dbManager.getDefaultImages()
+        createdDialog.show()
+        for (i in images.indices) {
+            val resId = resources.getIdentifier("img${i + 1}", "id", context?.packageName)
+            val image = createdDialog.findViewById<ImageView>(resId)
+            Picasso.get().load(getString(R.string.supabase_url_view_image) + images[i]).resize(80, 80).into(image)
+            image.setOnClickListener {
+                selectedImage = getString(R.string.supabase_url_view_image) + images[i]
+                Log.d(":::img", selectedImage)
+            }
+        }
 
     }
 
