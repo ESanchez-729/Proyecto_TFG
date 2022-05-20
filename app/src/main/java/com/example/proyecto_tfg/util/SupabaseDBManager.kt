@@ -214,9 +214,9 @@ class SupabaseDBManager (con : Context, token: String){
      */
     fun updateProfile(profile: ProfileSB) {
 
-        val request = postgrestClient.from<ProfileSB>("profile")
+        postgrestClient.from<ProfileSB>("profile")
             .insert(profile, upsert = true).eq("user_id", profile.user_id).execute()
-        
+
     }
 
     /**
@@ -262,6 +262,34 @@ class SupabaseDBManager (con : Context, token: String){
     /**
      * Function that gets a country by id.
      */
+    fun getCountriesIdAndName() : HashMap<String, Int> {
+
+        val okHttp = OkHttpClient()
+
+        val request = Request.Builder().url(context.getString(R.string.supabase_url_rest) + "/countries?select=id,name").get()
+            .addHeader("apikey", context.getString(R.string.AnonKey_Supabase)).build()
+
+        okHttp.newCall(request).execute().use { response ->
+
+            if (!response.isSuccessful) throw IOException("Unexpected code $response")
+            val postResult : String = response.body?.string() ?: throw IOException("Data not found $response")
+
+            val result = JSONArray(postResult)
+            val resultArray = hashMapOf<String, Int>()
+            for(i in 0 until result.length()) {
+                val country : SingleCountry = gson.fromJson(result.getJSONObject(i).toString(), SingleCountry::class.java)
+                resultArray[country.name] = country.id
+            }
+
+            return resultArray
+
+        }
+
+    }
+
+    /**
+     * Function that gets a country by id.
+     */
     fun getCountryNameById(id : Int) : String {
         val response = postgrestClient.from<String>("countries")
             .select().eq("id", id).execute()
@@ -279,3 +307,8 @@ class SupabaseDBManager (con : Context, token: String){
     }
 
 }
+
+data class SingleCountry (
+    val id : Int,
+    val name: String
+)

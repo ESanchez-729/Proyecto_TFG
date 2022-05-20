@@ -7,8 +7,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -22,12 +20,14 @@ import com.squareup.picasso.Picasso
 import io.supabase.gotrue.http.GoTrueHttpException
 import kotlinx.coroutines.*
 import java.io.IOException
-import android.content.DialogInterface
-import android.media.Image
 import android.util.Log
-import android.widget.ImageButton
-import android.widget.ImageView
+import android.widget.*
 import com.example.proyecto_tfg.util.SupabaseDBManager
+import androidx.core.content.res.ResourcesCompat
+import android.widget.ArrayAdapter
+
+
+
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -93,7 +93,7 @@ class ProfileFragment : Fragment() {
                     currentProfile = dbManager?.getUserDataById(currentId)!!
 
                     withContext(Dispatchers.Main) {
-                        Picasso.get().load(currentProfile.avatar_url).resize(80, 80).into(userImage)
+                        Picasso.get().load(currentProfile.avatar_url).resize(200, 200).into(userImage)
                         userName.text = currentProfile.username
                         userLocation.text = dbManager.getCountryNameById(currentProfile.country!!.toInt())
                         userDescription.text = currentProfile.description
@@ -145,7 +145,16 @@ class ProfileFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 
+        val userManager = SBUserManager(activity as MainActivity)
+        val dbManager = userManager.getDBManager()
+        val currentId = userManager.getUserId()!!
+        val currentProfile = dbManager?.getUserDataById(currentId)!!
+
         inflater.inflate(R.menu.profile_options, menu)
+        if(currentProfile.user_id != currentId) {
+            menu.findItem(R.id.profile_edit).isVisible = false
+        }
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -156,6 +165,61 @@ class ProfileFragment : Fragment() {
 
                 SBUserManager(activity as MainActivity).signOut()
                 (activity as MainActivity).recreate()
+                true
+            }
+
+            R.id.profile_edit -> {
+
+                val userManager = SBUserManager(activity as MainActivity)
+                val dbManager = userManager.getDBManager()
+                val currentId = userManager.getUserId()!!
+                val countryList = dbManager?.getCountriesIdAndName()
+                val countryNameList = mutableListOf<String>()
+                for (country in countryList ?: hashMapOf()) {
+                    countryNameList.add(country.key)
+                }
+
+                var usernameText = EditText(activity as MainActivity)
+                var countryText  = AutoCompleteTextView(activity as MainActivity)
+                var descriptionText = EditText(activity as MainActivity)
+
+                val editAlert: AlertDialog.Builder = AlertDialog.Builder(context)
+                val factory = LayoutInflater.from(context)
+                val editView: View = factory.inflate(R.layout.activity_editprofile, null)
+                editAlert.setView(editView)
+
+                val createdDialog = editAlert.create()
+
+                val adapter: ArrayAdapter<String> =
+                    ArrayAdapter<String>((activity as MainActivity), android.R.layout.simple_list_item_1, countryNameList)
+
+                createdDialog.show()
+                usernameText = createdDialog.findViewById(R.id.editProfile_username)
+                countryText = createdDialog.findViewById(R.id.editProfile_country)
+                countryText.setAdapter(adapter)
+                descriptionText = createdDialog.findViewById(R.id.editProfile_description)
+
+                createdDialog.findViewById<Button>(R.id.editProfile_save).setOnClickListener {
+                    if (usernameText.text.toString().trim() != "") {
+
+                        val profile = dbManager?.getUserDataById(currentId)!!
+                        profile.username = usernameText.text.toString()
+                        if(countryText.text.toString().trim() != "") {
+                            profile.country = countryList?.get(countryText.text.toString())
+                        } else {
+                            profile.country = 0
+                        }
+                        profile.description = descriptionText.text.toString()
+                        dbManager.updateProfile(profile)
+                        createdDialog.dismiss()
+                        recharge()
+                    } else {
+                        Toast.makeText((activity as MainActivity), (activity as MainActivity).getString(R.string.warn_username_not_filled), Toast.LENGTH_SHORT).show()
+                    }
+
+                }
+
+
                 true
             }
 
@@ -173,6 +237,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun profilePicSelection(profile : ProfileSB, dbManager: SupabaseDBManager) {
+
 
         var selectedImage = ""
 
@@ -192,14 +257,25 @@ class ProfileFragment : Fragment() {
         val createdDialog = pictureAlert.create()
         val images = dbManager.getDefaultImages()
         createdDialog.show()
+        var lastSelectedImage = createdDialog.findViewById<ImageView>(R.id.img1)
         for (i in images.indices) {
+
+            if(i == 9) {break}
             val resId = resources.getIdentifier("img${i + 1}", "id", context?.packageName)
             val image = createdDialog.findViewById<ImageView>(resId)
-            Picasso.get().load(getString(R.string.supabase_url_view_image) + images[i]).resize(80, 80).into(image)
+            Picasso.get().load(getString(R.string.supabase_url_view_image) + images[i]).resize(200, 200).into(image)
+            image.background = null
+            image.setPadding(0,0,0,0)
+
             image.setOnClickListener {
+                lastSelectedImage.background = null
+                lastSelectedImage.setPadding(0,0,0,0)
+                lastSelectedImage = image
+                image.background = ResourcesCompat.getDrawable((activity as MainActivity).resources,R.drawable.image_border, null)
                 selectedImage = getString(R.string.supabase_url_view_image) + images[i]
                 Log.d(":::img", selectedImage)
             }
+
         }
 
     }

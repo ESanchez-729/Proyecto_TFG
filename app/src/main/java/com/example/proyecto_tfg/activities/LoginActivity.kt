@@ -26,7 +26,6 @@ class LoginActivity : AppCompatActivity() {
         val passwordText : EditText = findViewById(R.id.login_password)
         val loginBtn : Button = findViewById(R.id.login_button)
         val registerBtn : Button = findViewById(R.id.register_button)
-        val googleBtn : ImageButton = findViewById(R.id.googleLogin)
 
         val usrManager = SBUserManager(this)
 

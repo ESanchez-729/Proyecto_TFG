@@ -28,7 +28,6 @@
     <string name="logout_button">Log out</string>
     <string name="login_button">Log in</string>
     <string name="register_button">Register</string>
-    <string name="pruebaxD">Albion Online es un mmorpg no lineal, en el que escribes tu propia historia</string>
     <string name="completed_status">Completed</string>
     <string name="playing_status">Playing</string>
     <string name="dropped_status">Dropped</string>
@@ -61,4 +60,5 @@
     <string name="country_label">Select a country</string>
     <string name="save_edit">Save changes</string>
     <string name="description">Description</string>
+    <string name="warn_username_not_filled">The username must be specified</string>
 </resources>
