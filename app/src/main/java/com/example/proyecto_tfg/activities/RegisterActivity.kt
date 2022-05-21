@@ -75,11 +75,7 @@ class RegisterActivity : AppCompatActivity() {
                             .show()
                     }
                 }
-
             }
-
         }
-
     }
-
 }
