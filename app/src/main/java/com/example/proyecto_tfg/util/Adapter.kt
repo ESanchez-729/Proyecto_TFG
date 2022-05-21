@@ -24,7 +24,7 @@ import kotlinx.coroutines.withContext
 import java.lang.IndexOutOfBoundsException
 
 
-class Adapter(private val dataSet: MutableList<GameItem>, private val context: Context, private val dissapearWhenDeleted : Boolean) :
+class Adapter(private val dataSet: MutableList<GameItem>, private val context: Context) :
     RecyclerView.Adapter<Adapter.ViewHolder>() {
 
     /**
@@ -113,101 +113,9 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
 
         }
 
-        viewHolder.addButton.setOnClickListener {
-
-            try {
-                if (dataSet[position].status == StatusEnum.NOT_ADDED.value) {
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        addRegister(position)
-                        dataSet[position].status = StatusEnum.PLAYING.value
-                        withContext(Dispatchers.Main) {
-                            notifyItemChanged(position)
-                        }
-                    }
-                }
-            } catch (e : GoTrueHttpException) {
-                Toast.makeText(context, context.getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
-            }
-
-
-        }
-
-        viewHolder.removeButton.setOnClickListener {
-            try {
-                if (dataSet[position].status != StatusEnum.NOT_ADDED.value) {
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            removeRegister(currentId)
-                            if (dissapearWhenDeleted) {
-                                dataSet.removeAt(position)
-                                withContext(Dispatchers.Main) {
-                                    notifyItemRemoved(position)
-                                    notifyItemChanged(position)
-                                }
-                            } else {
-                                dataSet[position].status = StatusEnum.NOT_ADDED.value
-                                withContext(Dispatchers.Main) {
-                                    notifyItemChanged(position)
-                                }
-                            }
-                        } catch (e: IndexOutOfBoundsException) {
-                        }
-                    }
-                }
-            } catch (e: IndexOutOfBoundsException) {
-            } catch (e : GoTrueHttpException) {
-                Toast.makeText(context, context.getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
-            }
-        }
-
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     override fun getItemCount() = dataSet.size
-
-    private fun addRegister(position : Int) {
-
-        val usrManager = SBUserManager(context)
-        val dbManager = usrManager.getDBManager()
-
-        val currentGame = dataSet[position]
-        val currentSBGame = GameSB(
-            game_id = currentGame.id,
-            name = currentGame.title,
-            cover = currentGame.image,
-            platforms = currentGame.platform,
-            total_rating = currentGame.score)
-
-        if (dbManager?.getGameById(currentSBGame.game_id) == null) {
-            dbManager?.insertGameIntoDB(currentSBGame)
-        }
-
-        dbManager?.addGame(
-            LibrarySB(
-                user_id = usrManager.getUserId()!!,
-                game_id = currentSBGame.game_id,
-                status = StatusEnum.PLAYING,
-                review = "",
-                score = -1,
-                recommended = false
-            )
-        )
-    }
-
-    private fun removeRegister( id : Int) {
-
-        val usrManager = SBUserManager(context)
-        val dbManager = usrManager.getDBManager()
-        val userId = usrManager.getUserId()
-
-        if (userId == null) {
-            Toast.makeText(context, "Error al eliminar el registro.", Toast.LENGTH_LONG).show()
-        } else {
-            dbManager?.removeGame(userId, id)
-        }
-
-    }
 
 }

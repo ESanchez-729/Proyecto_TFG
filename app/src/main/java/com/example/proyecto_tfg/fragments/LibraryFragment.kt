@@ -1,6 +1,7 @@
 package com.example.proyecto_tfg.fragments
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -12,13 +13,16 @@ import android.view.MotionEvent
 import android.view.GestureDetector
 import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.GestureDetector.SimpleOnGestureListener
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
 import com.example.proyecto_tfg.util.Adapter
 import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.enums.StatusEnum
+import com.example.proyecto_tfg.models.GameSB
 import com.example.proyecto_tfg.util.SBUserManager
+import io.supabase.gotrue.http.GoTrueHttpException
 import kotlinx.coroutines.*
 
 
@@ -37,6 +41,8 @@ class LibraryFragment : Fragment() {
     private var reciclador: RecyclerView? = null
     private var adaptador: RecyclerView.Adapter<*>? = null
     private var gestor: RecyclerView.LayoutManager? = null
+    //Array de datos
+    private lateinit var datos : MutableList<GameItem>
 
     //Método que se ejecuta al crear el fragment.
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,7 +72,7 @@ class LibraryFragment : Fragment() {
 
         //Se cargan los datos en el recyclerView.
         //Array que llevará los datos.
-        val datos: MutableList<GameItem> = ArrayList()
+        datos = ArrayList()
         val context = activity as MainActivity
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -101,7 +107,7 @@ class LibraryFragment : Fragment() {
                 gestor = LinearLayoutManager(context)
 
                 reciclador!!.layoutManager = gestor
-                adaptador = Adapter(datos, context, true)
+                adaptador = Adapter(datos, context)
                 reciclador!!.adapter = adaptador
 
                 //Método que añade funcionalidad a cada fila del recyclerView.
@@ -115,7 +121,13 @@ class LibraryFragment : Fragment() {
                             })
 
                     override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                        val child = rv.findChildViewUnder(e.x, e.y)
 
+                        if (child != null && gestureDetector.onTouchEvent(e)) {
+                            val position = rv.getChildAdapterPosition(child)
+                            modifyOptions(datos[position], child, position)
+
+                        }
                         return false
                     }
 
@@ -143,6 +155,79 @@ class LibraryFragment : Fragment() {
             return lf
         }
 
+    }
+
+    private fun modifyOptions(libItem : GameItem, row : View, pos: Int) {
+
+        val choices = mutableListOf(getString(R.string.completed_status),
+            getString(R.string.dropped_status),
+            getString(R.string.on_hold_status),
+            getString(R.string.playing_status),
+            getString(R.string.plan_to_play_status))
+
+        var checkedItem = -1
+
+        if (libItem.status != StatusEnum.NOT_ADDED.value) {
+            choices.add(getString(R.string.remove))
+            checkedItem = -1
+        } else {
+            for(choice in 0 until choices.size) {
+                if (libItem.status == choices[choice]) {
+                    checkedItem = choice
+                }
+            }
+        }
+
+        var currentOption = ""
+
+        AlertDialog.Builder(activity as MainActivity)
+            .setTitle(getString(R.string.sort_search))
+            .setSingleChoiceItems(choices.toTypedArray(), checkedItem) { _, i ->
+
+                //Se almacena la opcion seleccionada.
+                currentOption = choices[i]
+
+            }
+            .setNeutralButton(getString(R.string.menu_cancel)) { _, _ ->}
+            .setPositiveButton(getString(R.string.menu_accept)) { dlg, _ ->
+
+                try {
+
+                    val usrManager = SBUserManager(activity as MainActivity)
+                    val dbManager = usrManager.getDBManager()
+
+                    CoroutineScope(Dispatchers.IO).launch {
+
+                        val currentSBGame = GameSB(
+                            game_id = libItem.id,
+                            name = libItem.title,
+                            cover = libItem.image,
+                            platforms = libItem.platform,
+                            total_rating = libItem.score)
+
+                        if (dbManager?.getGameById(currentSBGame.game_id) == null) {
+                            dbManager?.insertGameIntoDB(currentSBGame)
+                        }
+
+                        dbManager?.updateGameStatus(usrManager.getUserId()!!, libItem.id.toString(), currentOption)
+                        withContext(Dispatchers.Main) {
+                            if (currentOption != "") {
+                                datos[pos].status = if (currentOption == getString(R.string.remove)) {
+                                    StatusEnum.NOT_ADDED.value
+                                } else {
+                                    currentOption
+                                }
+                                adaptador?.notifyItemChanged(pos)
+                            }
+                        }
+                        dlg.dismiss()
+                    }
+
+                } catch (e : GoTrueHttpException) {
+                    Toast.makeText((activity as MainActivity), getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
+                }
+
+            }.show()
     }
 
 }

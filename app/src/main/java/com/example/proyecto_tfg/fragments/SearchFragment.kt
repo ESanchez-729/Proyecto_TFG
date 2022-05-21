@@ -31,6 +31,10 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import kotlin.collections.ArrayList
 import kotlinx.coroutines.*
+import android.content.Intent
+import android.widget.TextView
+import com.example.proyecto_tfg.models.GameSB
+
 
 class SearchFragment : Fragment() {
 
@@ -49,6 +53,8 @@ class SearchFragment : Fragment() {
     private var searchFilter = FilterContent(false, "")
     //User Manager
     private lateinit var usrManager: SBUserManager
+    //Array de datos
+    private lateinit var datos: MutableList<GameItem>
 
     //Método que se ejecuta al crear el fragment.
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -158,7 +164,7 @@ class SearchFragment : Fragment() {
     fun showData(rawData : List<JsonTransformer>) {
 
         //Array que llevará los datos sin ordenar.
-        val datos: MutableList<GameItem> = ArrayList()
+        datos = ArrayList()
 
         //Se pasa por todos los objetos del array de resultados.
         for (item in rawData) {
@@ -250,7 +256,7 @@ class SearchFragment : Fragment() {
         gestor = LinearLayoutManager(activity as MainActivity)
 
         reciclador!!.layoutManager = gestor
-        adaptador = Adapter(finalData, activity as MainActivity, false)
+        adaptador = Adapter(finalData, activity as MainActivity)
         reciclador!!.adapter = adaptador
 
         //Método que añade funcionalidad a cada fila del recyclerView.
@@ -264,6 +270,15 @@ class SearchFragment : Fragment() {
                     })
 
             override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+
+                val child = rv.findChildViewUnder(e.x, e.y)
+
+                if (child != null && gestureDetector.onTouchEvent(e)) {
+                    val position = rv.getChildAdapterPosition(child)
+                    modifyOptions(datos[position], child, position)
+
+                }
+
                 return false
             }
 
@@ -362,6 +377,80 @@ class SearchFragment : Fragment() {
             }
             .show()
     }
+
+    private fun modifyOptions(libItem : GameItem, row : View, pos: Int) {
+
+        val choices = mutableListOf(getString(R.string.completed_status),
+            getString(R.string.dropped_status),
+            getString(R.string.on_hold_status),
+            getString(R.string.playing_status),
+            getString(R.string.plan_to_play_status))
+
+        var checkedItem = -1
+
+        if (libItem.status != StatusEnum.NOT_ADDED.value) {
+            choices.add(getString(R.string.remove))
+            checkedItem = -1
+        } else {
+            for(choice in 0 until choices.size) {
+                if (libItem.status == choices[choice]) {
+                    checkedItem = choice
+                }
+            }
+        }
+
+        var currentOption = ""
+
+        AlertDialog.Builder(activity as MainActivity)
+            .setTitle(getString(R.string.sort_search))
+            .setSingleChoiceItems(choices.toTypedArray(), checkedItem) { _, i ->
+
+                //Se almacena la opcion seleccionada.
+                currentOption = choices[i]
+
+            }
+            .setNeutralButton(getString(R.string.menu_cancel)) { _, _ ->}
+            .setPositiveButton(getString(R.string.menu_accept)) { dlg, _ ->
+
+                try {
+
+                    val usrManager = SBUserManager(activity as MainActivity)
+                    val dbManager = usrManager.getDBManager()
+
+                    CoroutineScope(Dispatchers.IO).launch {
+
+                        val currentSBGame = GameSB(
+                            game_id = libItem.id,
+                            name = libItem.title,
+                            cover = libItem.image,
+                            platforms = libItem.platform,
+                            total_rating = libItem.score)
+
+                        if (dbManager?.getGameById(currentSBGame.game_id) == null) {
+                            dbManager?.insertGameIntoDB(currentSBGame)
+                        }
+
+                        dbManager?.updateGameStatus(usrManager.getUserId()!!, libItem.id.toString(), currentOption)
+                        withContext(Dispatchers.Main) {
+                            if (currentOption != "") {
+                                datos[pos].status = if (currentOption == getString(R.string.remove)) {
+                                    StatusEnum.NOT_ADDED.value
+                                } else {
+                                    currentOption
+                                }
+                                adaptador?.notifyItemChanged(pos)
+                            }
+                        }
+                        dlg.dismiss()
+                    }
+
+                } catch (e : GoTrueHttpException) {
+                    Toast.makeText((activity as MainActivity), getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
+                }
+
+            }.show()
+    }
+
 }
 
 //Clase que almacena los tados a recibir de la petición a IGDB.

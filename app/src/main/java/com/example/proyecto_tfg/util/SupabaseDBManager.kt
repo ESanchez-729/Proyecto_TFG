@@ -145,16 +145,42 @@ class SupabaseDBManager (con : Context, token: String){
     /**
      * Method that updates a register from the current user library.
      */
-    fun updateGame(library: LibrarySB) {
-        val result = postgrestClient.from<Any>("library")
-            .update(gson.toJson(library)).eq("user_id", library.user_id)
-            .eq("game_id", library.game_id).execute()
+    fun updateGameStatus(userId: String, gameId: String, status: String) {
 
-        if (result.status == 500) {
-            Log.d(":::", "Error al actualizar: " + library.game_id)
+        if (status == "Remove") {
+
+            postgrestClient.from<LibrarySB>("library")
+                .delete().eq(LibrarySB::user_id, userId).eq(LibrarySB::game_id, gameId)
+                .execute()
+
+        } else if(status == "") {
+            return
         }
+        else {
 
-        Log.d(":::", "Update Status: " + result.status)
+            val resultGet = postgrestClient.from<LibrarySB>("library")
+                .select().eq("game_id", gameId).eq("user_id", userId)
+                .execute()
+
+            val temp = JSONArray(resultGet.body)
+            val currentLine = if (temp.length() == 0) {
+                LibrarySB(
+                    user_id = userId,
+                    game_id = gameId.toInt(),
+                    status = StatusEnum.values().find { it.value == status }!!,
+                    review = "",
+                    score = -1,
+                    recommended = false
+                )
+            } else {
+                gson.fromJson(temp.getJSONObject(0).toString(), LibrarySB::class.java)
+            }
+
+            currentLine.status = StatusEnum.values().find { it.value == status }!!
+            postgrestClient.from<LibrarySB>("library")
+                .insert(currentLine, upsert = true).execute()
+
+        }
 
     }
 
