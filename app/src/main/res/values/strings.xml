@@ -1,13 +1,13 @@
 <resources>
-    <string name="app_name">My Videogame Collection</string>
+    <string name="app_name" translatable="false">My Videogame Collection</string>
     <string name="registration_text">Account registration</string>
     <string name="notifications">Notifications</string>
-    <string name="app_name_short">MyVC</string>
+    <string name="app_name_short" translatable="false">MyVC</string>
     <string name="profile_menu">Profile</string>
     <string name="search_menu">Search</string>
     <string name="library_menu">Library</string>
     <string name="score_field">Score: </string>
-    <string name="no_Score">N/A</string>
+    <string name="no_Score" translatable="false">N/A</string>
     <string name="sort_search">Sort by…</string>
     <string name="filter_search">Filter by…</string>
     <string name="menu_option1">Score</string>
@@ -17,12 +17,6 @@
     <string name="menu_accept">Accept</string>
     <string name="filter_option1">Score: Positive</string>
     <string name="filter_option2">Score: Negative</string>
-    <string name="filter_option3">Status: Playing</string>
-    <string name="filter_option4">Status: Completed</string>
-    <string name="filter_option5">Status: On Hold</string>
-    <string name="filter_option6">Status: Dropped</string>
-    <string name="filter_option7">Status: Plan to Play</string>
-    <string name="filter_option8">Status: Not Added</string>
     <string name="add_button">Add</string>
     <string name="remove_button">Remove</string>
     <string name="logout_button">Log out</string>
@@ -31,12 +25,11 @@
     <string name="completed_status">Completed</string>
     <string name="playing_status">Playing</string>
     <string name="dropped_status">Dropped</string>
-    <string name="on_hold_status">On-Hold</string>
+    <string name="on_hold_status">On Hold</string>
     <string name="plan_to_play_status">Plan to play</string>
     <string name="not_added_status">Not added</string>
     <string name="library_status">Library Status</string>
     <string name="social">Social</string>
-    <string name="review_card">Reviews</string>
     <string name="friends_card">Friends</string>
     <string name="username_login">Username</string>
     <string name="password_login">Password</string>
@@ -49,12 +42,11 @@
     <string name="err_invalid_email">Email is not valid</string>
     <string name="err_empty_fields">All the fields must be filled</string>
     <string name="err_register">There was an error creating the account</string>
-    <string name="err_already_logged_in">User already logged in</string>
     <string name="err_unknown_restart_opt">An error has occurred, please restart the app and try again</string>
-    <string name="supabase_url_rest">https://hdwsktohrhulukpzmike.supabase.co/rest/v1</string>
-    <string name="supabase_url_auth">https://hdwsktohrhulukpzmike.supabase.co/auth/v1</string>
-    <string name="supabase_url_images">https://hdwsktohrhulukpzmike.supabase.co/storage/v1/object/list/avatars</string>
-    <string name="supabase_url_view_image">https://hdwsktohrhulukpzmike.supabase.co/storage/v1/object/public/avatars/default/</string>
+    <string name="supabase_url_rest" translatable="false">https://hdwsktohrhulukpzmike.supabase.co/rest/v1</string>
+    <string name="supabase_url_auth" translatable="false">https://hdwsktohrhulukpzmike.supabase.co/auth/v1</string>
+    <string name="supabase_url_images" translatable="false">https://hdwsktohrhulukpzmike.supabase.co/storage/v1/object/list/avatars</string>
+    <string name="supabase_url_view_image" translatable="false">https://hdwsktohrhulukpzmike.supabase.co/storage/v1/object/public/avatars/default/</string>
     <string name="friend_search">Search for friends</string>
     <string name="edit_profile">Edit profile</string>
     <string name="country_label">Select a country</string>
