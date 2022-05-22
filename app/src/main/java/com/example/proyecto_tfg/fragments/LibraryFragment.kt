@@ -266,7 +266,10 @@ class LibraryFragment : Fragment() {
                                             addDialog.setTitle("Confirmation")
                                             addDialog.setMessage("Are you sure you want to add " + usersData[position].userName)
 
-                                            addDialog.setNegativeButton("No") { dlg, _ -> dlg.dismiss() }
+                                            addDialog.setNegativeButton("No") { dlg, _ ->
+                                                dbManager.denyUser(usersData[position].userID)
+                                                dlg.dismiss()
+                                            }
                                             addDialog.setPositiveButton("Yes") { dlg, _ ->
                                                 dbManager.acceptFriend(usersData[position].userID)
                                                 dlg.dismiss()

@@ -9,7 +9,6 @@ import com.example.proyecto_tfg.models.GameSB
 import com.example.proyecto_tfg.models.LibrarySB
 import com.example.proyecto_tfg.models.ProfileSB
 import com.google.gson.Gson
-import com.google.gson.JsonArray
 import com.google.gson.reflect.TypeToken
 import io.supabase.postgrest.PostgrestDefaultClient
 import okhttp3.MediaType.Companion.toMediaType
@@ -296,9 +295,31 @@ class SupabaseDBManager (con : Context, token: String){
     /**
      * Method that removes a friend.
      */
+    fun denyUser(userId: String) {
+
+        if(alreadyAdded(userId, false)) {
+
+            val userManager = SBUserManager(context)
+            val loggedUser = userManager.getUserId()!!
+            val result = postgrestClient.from<FriendlistSB>("friendlist")
+                .select().or("user.eq.$loggedUser,friend.eq.$loggedUser")
+                .or("user.eq.$userId,friend.eq.$userId")
+                .eq("accepted", false).execute()
+
+            val field = gson.fromJson(JSONArray(result.body).getJSONObject(0).toString(), FriendlistSB::class.java)
+            postgrestClient.from<FriendlistSB>("friendlist")
+                .delete().eq("user", field.user).eq("friend", field.friend).execute()
+
+        }
+
+    }
+
+    /**
+     * Method that removes a friend.
+     */
     fun removeFriend(friendId: String) {
 
-        if(alreadyAdded(friendId, false)) {
+        if(alreadyAdded(friendId, true)) {
 
             val userManager = SBUserManager(context)
             val loggedUser = userManager.getUserId()!!
