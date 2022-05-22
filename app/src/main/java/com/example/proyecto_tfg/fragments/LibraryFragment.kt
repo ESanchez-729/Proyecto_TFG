@@ -27,12 +27,6 @@ import kotlinx.coroutines.*
 
 
 //Fragments de libreria
-
-/**
- * A simple [Fragment] subclass.
- * Use the [LibraryFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class LibraryFragment : Fragment() {
 
     private var searchFilter: String? = null
@@ -82,11 +76,11 @@ class LibraryFragment : Fragment() {
             if(userManager.loggedIn()) {
                 val dbManager = userManager.getDBManager()
                 var currentUser = userManager.getUserId()!!
-                if(otherUserId != "") {currentUser = otherUserId!!}
+                if(otherUserId != null || otherUserId != "") {currentUser = otherUserId!!}
                 Log.d(":::Filter(status)", searchFilter.toString())
                 Log.d(":::Filter(user)", otherUserId.toString())
                 val currentStatus =  StatusEnum.values().find { it.value == searchFilter }
-                for (item in dbManager!!.getLibraryByUserFilteredByStatus(currentUser, currentStatus) ?: listOf()) {
+                for (item in dbManager!!.getLibraryByUserFilteredByStatus( currentUser, currentStatus) ?: listOf()) {
                     val game = dbManager.getGameById(item.game_id)
                     datos.add(
                         GameItem(
@@ -125,7 +119,7 @@ class LibraryFragment : Fragment() {
 
                         if (child != null && gestureDetector.onTouchEvent(e)) {
                             val position = rv.getChildAdapterPosition(child)
-                            modifyOptions(datos[position], child, position)
+                            modifyOptions(datos[position], position)
 
                         }
                         return false
@@ -157,20 +151,18 @@ class LibraryFragment : Fragment() {
 
     }
 
-    private fun modifyOptions(libItem : GameItem, row : View, pos: Int) {
+    private fun modifyOptions(libItem : GameItem, pos: Int) {
 
-        val choices = mutableListOf(getString(R.string.completed_status),
-            getString(R.string.dropped_status),
-            getString(R.string.on_hold_status),
-            getString(R.string.playing_status),
-            getString(R.string.plan_to_play_status))
+        val choices = mutableListOf(StatusEnum.COMPLETED.value,
+            StatusEnum.DROPPED.value,
+            StatusEnum.ON_HOLD.value,
+            StatusEnum.PLAYING.value,
+            StatusEnum.PLAN_TO_PLAY.value)
 
         var checkedItem = -1
 
         if (libItem.status != StatusEnum.NOT_ADDED.value) {
             choices.add(getString(R.string.remove))
-            checkedItem = -1
-        } else {
             for(choice in 0 until choices.size) {
                 if (libItem.status == choices[choice]) {
                     checkedItem = choice
@@ -209,7 +201,8 @@ class LibraryFragment : Fragment() {
                             dbManager?.insertGameIntoDB(currentSBGame)
                         }
 
-                        dbManager?.updateGameStatus(usrManager.getUserId()!!, libItem.id.toString(), currentOption)
+                        dbManager?.updateGameStatus(if (otherUserId != "" || otherUserId != null){ otherUserId!! }
+                        else { usrManager.getUserId()!!}, libItem.id.toString(), currentOption)
                         withContext(Dispatchers.Main) {
                             if (currentOption != "") {
                                 datos[pos].status = if (currentOption == getString(R.string.remove)) {

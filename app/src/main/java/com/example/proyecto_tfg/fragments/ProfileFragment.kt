@@ -26,30 +26,14 @@ import com.example.proyecto_tfg.util.SupabaseDBManager
 import androidx.core.content.res.ResourcesCompat
 import android.widget.ArrayAdapter
 
-
-
-
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ProfileFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ProfileFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+
+    private var currentUserID: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+            currentUserID = it.getString("current_user_id")
         }
     }
 
@@ -89,7 +73,7 @@ class ProfileFragment : Fragment() {
                 try {
 
                     val dbManager = userManager.getDBManager()
-                    val currentId = userManager.getUserId()!!
+                    val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
                     currentProfile = dbManager?.getUserDataById(currentId)!!
 
                     withContext(Dispatchers.Main) {
@@ -99,7 +83,7 @@ class ProfileFragment : Fragment() {
                         userDescription.text = currentProfile.description
 
                         userImage.setOnClickListener {
-                            if(currentProfile.user_id == currentId) {
+                            if(currentProfile.user_id == userManager.getUserId()) {
                                 profilePicSelection(currentProfile, dbManager)
                             }
                         }
@@ -107,7 +91,6 @@ class ProfileFragment : Fragment() {
                         for (item in libraryList){
 
                             item.value.setOnClickListener {
-                                Toast.makeText(context, item.key, Toast.LENGTH_SHORT).show()
                                 replaceFragment(
                                     LibraryFragment.newInstance(
                                         item.key,
@@ -147,11 +130,11 @@ class ProfileFragment : Fragment() {
 
         val userManager = SBUserManager(activity as MainActivity)
         val dbManager = userManager.getDBManager()
-        val currentId = userManager.getUserId()!!
+        val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
         val currentProfile = dbManager?.getUserDataById(currentId)!!
 
         inflater.inflate(R.menu.profile_options, menu)
-        if(currentProfile.user_id != currentId) {
+        if(currentProfile.user_id != userManager.getUserId()) {
             menu.findItem(R.id.profile_edit).isVisible = false
         }
 
@@ -172,16 +155,16 @@ class ProfileFragment : Fragment() {
 
                 val userManager = SBUserManager(activity as MainActivity)
                 val dbManager = userManager.getDBManager()
-                val currentId = userManager.getUserId()!!
+                val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
                 val countryList = dbManager?.getCountriesIdAndName()
                 val countryNameList = mutableListOf<String>()
                 for (country in countryList ?: hashMapOf()) {
                     countryNameList.add(country.key)
                 }
 
-                var usernameText = EditText(activity as MainActivity)
-                var countryText  = AutoCompleteTextView(activity as MainActivity)
-                var descriptionText = EditText(activity as MainActivity)
+                val usernameText: EditText
+                val countryText: AutoCompleteTextView
+                val descriptionText: EditText
 
                 val editAlert: AlertDialog.Builder = AlertDialog.Builder(context)
                 val factory = LayoutInflater.from(context)
@@ -220,6 +203,12 @@ class ProfileFragment : Fragment() {
                 }
 
 
+                true
+            }
+
+            R.id.profile_searchFriends -> {
+
+                replaceFragment(SearchFragment.newInstance(true))
                 true
             }
 
@@ -285,14 +274,15 @@ class ProfileFragment : Fragment() {
     }
 
     companion object {
-        // TODO: Rename and change types and number of parameters
+
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ProfileFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        fun newInstance(userID: String) : ProfileFragment {
+            val pf = ProfileFragment()
+            val args = Bundle()
+            args.putString("current_user_id", userID)
+            pf.arguments = args
+            return pf
+        }
+
     }
 }

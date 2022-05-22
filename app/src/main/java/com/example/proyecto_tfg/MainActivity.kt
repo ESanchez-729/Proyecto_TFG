@@ -71,22 +71,22 @@ class MainActivity : AppCompatActivity() {
 
                 R.id.search_button -> {
                     if (currentFragment != R.id.search_button) {
-                        replaceFragment(SearchFragment())
+                        replaceFragment(SearchFragment.newInstance(false))
                         currentFragment = R.id.search_button
                     }
                 }
                 R.id.profile_button -> {
                     if (currentFragment != R.id.profile_button) {
-                        replaceFragment(ProfileFragment())
+                        replaceFragment(ProfileFragment.newInstance(usrManager.getUserId()!!))
                         currentFragment = R.id.profile_button
                     }
                 }
                 R.id.library_button -> {
-                if (currentFragment != R.id.library_button) {
-                    replaceFragment(LibraryFragment.newInstance("", usrManager.getUserId()!!))
-                    currentFragment = R.id.library_button
+                    if (currentFragment != R.id.library_button) {
+                        replaceFragment(LibraryFragment.newInstance("", usrManager.getUserId()!!))
+                        currentFragment = R.id.library_button
+                    }
                 }
-            }
 
             }
 

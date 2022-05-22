@@ -147,7 +147,7 @@ class SupabaseDBManager (con : Context, token: String){
      */
     fun updateGameStatus(userId: String, gameId: String, status: String) {
 
-        if (status == "Remove") {
+        if (status == context.getString(R.string.remove)) {
 
             postgrestClient.from<LibrarySB>("library")
                 .delete().eq(LibrarySB::user_id, userId).eq(LibrarySB::game_id, gameId)

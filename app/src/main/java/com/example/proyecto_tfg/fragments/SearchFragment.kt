@@ -13,6 +13,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.proyecto_tfg.util.Adapter
@@ -20,6 +22,8 @@ import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.R
+import com.example.proyecto_tfg.fragments.ProfileFragment.Companion.newInstance
+import com.example.proyecto_tfg.models.FriendItem
 import com.example.proyecto_tfg.util.SBUserManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -31,13 +35,15 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import kotlin.collections.ArrayList
 import kotlinx.coroutines.*
-import android.content.Intent
-import android.widget.TextView
 import com.example.proyecto_tfg.models.GameSB
+import com.example.proyecto_tfg.models.ProfileSB
+import com.example.proyecto_tfg.util.FriendAdapter
+import com.example.proyecto_tfg.fragments.ProfileFragment
 
 
 class SearchFragment : Fragment() {
 
+    private var userSearch: Boolean? = null
     //Objetos para el recycler
     private var reciclador: RecyclerView? = null
     var adaptador: RecyclerView.Adapter<*>? = null
@@ -53,12 +59,16 @@ class SearchFragment : Fragment() {
     private var searchFilter = FilterContent(false, "")
     //User Manager
     private lateinit var usrManager: SBUserManager
-    //Array de datos
-    private lateinit var datos: MutableList<GameItem>
+    //Arrays de datos
+    private lateinit var gameData: MutableList<GameItem>
+    private lateinit var usersData: MutableList<FriendItem>
 
     //Método que se ejecuta al crear el fragment.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        arguments?.let {
+            userSearch = it.getBoolean("user_search")
+        }
 
         //Se inicializan el cliente y el gson.
         client = OkHttpClient()
@@ -95,6 +105,11 @@ class SearchFragment : Fragment() {
         val searchItem = menu.findItem(R.id.search_bar)
         val searchView = searchItem.actionView as SearchView
 
+        if(userSearch == true) {
+            menu.findItem(R.id.search_filter).isVisible = false
+            menu.findItem(R.id.search_sort).isVisible = false
+        }
+
         searchView.setSearchableInfo(manager.getSearchableInfo(requireActivity().componentName))
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -108,24 +123,46 @@ class SearchFragment : Fragment() {
                 //Se almacena el valor de la query y se desselecciona
                 if(query != null) {search = query}
                 searchView.clearFocus()
-                var data : List<JsonTransformer>
                 CoroutineScope(Dispatchers.IO).launch {
 
-                    try {
-                        //Se hace la consulta y se sacan los datos.
-                        data = getData(search)
-                        withContext(Dispatchers.Main) {
-                            //Se cargan los datos en el recyclerView.
-                            try {
-                                showData(data)
-                            } catch (e: IllegalStateException) {
-                                Log.d(":::", "chill")
+                    if( userSearch == true) {
+
+                        try {
+                            //Se hace la consulta y se sacan los datos.
+                            var data = usrManager.getDBManager()?.getUsersByUsername(search)
+                            withContext(Dispatchers.Main) {
+                                //Se cargan los datos en el recyclerView.
+                                try {
+                                    showUsersData(data!!)
+                                } catch (e: IllegalStateException) {
+                                    Log.d(":::", "chill")
+                                }
+                                adaptador?.notifyDataSetChanged()
                             }
-                            adaptador?.notifyDataSetChanged()
+                        } catch (e : GoTrueHttpException) {
+                            Toast.makeText(context, getString(R.string.err_unknown_restart_opt), Toast.LENGTH_LONG).show()
                         }
-                    } catch (e : GoTrueHttpException) {
-                        Toast.makeText(context, getString(R.string.err_unknown_restart_opt), Toast.LENGTH_LONG).show()
+
+                    } else {
+
+                        try {
+                            //Se hace la consulta y se sacan los datos.
+                            val data = getGameData(search)
+                            withContext(Dispatchers.Main) {
+                                //Se cargan los datos en el recyclerView.
+                                try {
+                                    showGameData(data)
+                                } catch (e: IllegalStateException) {
+                                    Log.d(":::", "chill")
+                                }
+                                adaptador?.notifyDataSetChanged()
+                            }
+                        } catch (e : GoTrueHttpException) {
+                            Toast.makeText(context, getString(R.string.err_unknown_restart_opt), Toast.LENGTH_LONG).show()
+                        }
+
                     }
+
                 }
                 //Se limpia la caja de búsqueda.
                 searchView.setQuery("", false)
@@ -161,10 +198,10 @@ class SearchFragment : Fragment() {
     }
 
     //Método que carga los datos en el recyclerView.
-    fun showData(rawData : List<JsonTransformer>) {
+    fun showGameData(rawData : List<JsonTransformer>) {
 
         //Array que llevará los datos sin ordenar.
-        datos = ArrayList()
+        gameData = ArrayList()
 
         //Se pasa por todos los objetos del array de resultados.
         for (item in rawData) {
@@ -212,7 +249,7 @@ class SearchFragment : Fragment() {
             }
 
             //Se añade el juego al array con los datos necesarios.
-            datos.add(
+            gameData.add(
 
                 GameItem(
                     id = item.id,
@@ -228,9 +265,9 @@ class SearchFragment : Fragment() {
         //Se ordena el array y se almacena en otra variable.
         val sortedData : MutableList<GameItem> = when(searchSort) {
 
-            getString(R.string.menu_option1) -> datos.sortedWith(compareBy {it.score}).toMutableList()
-            getString(R.string.menu_option3) -> datos.sortedWith(compareBy {it.title}).toMutableList()
-            else -> datos
+            getString(R.string.menu_option1) -> gameData.sortedWith(compareBy {it.score}).toMutableList()
+            getString(R.string.menu_option3) -> gameData.sortedWith(compareBy {it.title}).toMutableList()
+            else -> gameData
 
         }
 
@@ -241,7 +278,7 @@ class SearchFragment : Fragment() {
         var finalData = sortedData
         if(dbManager != null) {
             val userData = dbManager.getLibraryByUserFilteredByStatus(usrManager.getUserId()!!, StatusEnum.values().find { it.value == "" })
-            finalData =  datos.map { item ->
+            finalData =  gameData.map { item ->
                 val temp = userData?.find { item2 -> item.id == item2.game_id.toInt() }
                 if (temp != null) {
                     item.status = temp.status.value
@@ -275,7 +312,65 @@ class SearchFragment : Fragment() {
 
                 if (child != null && gestureDetector.onTouchEvent(e)) {
                     val position = rv.getChildAdapterPosition(child)
-                    modifyOptions(datos[position], child, position)
+                    modifyOptions(gameData[position], position)
+
+                }
+
+                return false
+            }
+
+            override fun onTouchEvent(rv: RecyclerView, e: MotionEvent) {}
+            override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
+        })
+
+    }
+
+    fun showUsersData(rawData : List<ProfileSB>) {
+
+        //Array que llevará los datos sin ordenar.
+        usersData = ArrayList()
+
+        //Se pasa por todos los objetos del array de resultados.
+        for (item in rawData) {
+
+            //Se añade el juego al array con los datos necesarios.
+            usersData.add(
+
+                FriendItem(
+                    userID = item.user_id,
+                    userName = item.username,
+                    profilePic = item.avatar_url
+                )
+            )
+        }
+
+        //Se configura el reciclerView y se añaden los datos.
+        reciclador!!.setHasFixedSize(true)
+        gestor = LinearLayoutManager(activity as MainActivity)
+
+        reciclador!!.layoutManager = gestor
+        adaptador = FriendAdapter(usersData)
+        reciclador!!.adapter = adaptador
+
+        //Método que añade funcionalidad a cada fila del recyclerView.
+        reciclador!!.addOnItemTouchListener(object : RecyclerView.OnItemTouchListener {
+            var gestureDetector =
+                GestureDetector(activity as MainActivity,
+                    object : GestureDetector.SimpleOnGestureListener() {
+                        override fun onSingleTapUp(event: MotionEvent): Boolean {
+                            return true
+                        }
+                    })
+
+            override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+
+                val child = rv.findChildViewUnder(e.x, e.y)
+
+                if (child != null && gestureDetector.onTouchEvent(e)) {
+                    val position = rv.getChildAdapterPosition(child)
+                    replaceFragment(
+                        ProfileFragment.newInstance(usersData[position].userID)
+                    )
 
                 }
 
@@ -289,7 +384,7 @@ class SearchFragment : Fragment() {
     }
 
     //Método que realiza un post a igdb para sacar los datos a buscados.
-    fun getData(searchArg : String) : List<JsonTransformer> {
+    fun getGameData(searchArg : String) : List<JsonTransformer> {
 
         //Tipo de datos a pasar en la petición.
         val markdownMediaType = "text/x-markdown; charset=utf-8".toMediaType()
@@ -378,20 +473,18 @@ class SearchFragment : Fragment() {
             .show()
     }
 
-    private fun modifyOptions(libItem : GameItem, row : View, pos: Int) {
+    private fun modifyOptions(libItem : GameItem, pos: Int) {
 
-        val choices = mutableListOf(getString(R.string.completed_status),
-            getString(R.string.dropped_status),
-            getString(R.string.on_hold_status),
-            getString(R.string.playing_status),
-            getString(R.string.plan_to_play_status))
+        val choices = mutableListOf(StatusEnum.COMPLETED.value,
+            StatusEnum.DROPPED.value,
+            StatusEnum.ON_HOLD.value,
+            StatusEnum.PLAYING.value,
+            StatusEnum.PLAN_TO_PLAY.value)
 
         var checkedItem = -1
 
         if (libItem.status != StatusEnum.NOT_ADDED.value) {
             choices.add(getString(R.string.remove))
-            checkedItem = -1
-        } else {
             for(choice in 0 until choices.size) {
                 if (libItem.status == choices[choice]) {
                     checkedItem = choice
@@ -433,7 +526,7 @@ class SearchFragment : Fragment() {
                         dbManager?.updateGameStatus(usrManager.getUserId()!!, libItem.id.toString(), currentOption)
                         withContext(Dispatchers.Main) {
                             if (currentOption != "") {
-                                datos[pos].status = if (currentOption == getString(R.string.remove)) {
+                                gameData[pos].status = if (currentOption == getString(R.string.remove)) {
                                     StatusEnum.NOT_ADDED.value
                                 } else {
                                     currentOption
@@ -449,6 +542,28 @@ class SearchFragment : Fragment() {
                 }
 
             }.show()
+    }
+
+    private fun replaceFragment(fragment: Fragment) {
+
+        val fragmentManager : FragmentManager = (activity as MainActivity).supportFragmentManager
+        val fragmentTransaction : FragmentTransaction = fragmentManager.beginTransaction()
+        fragmentTransaction.replace(R.id.main_frame_layout, fragment)
+        fragmentTransaction.commit()
+
+    }
+
+    companion object {
+
+        @JvmStatic
+        fun newInstance(doUserSearch: Boolean) : SearchFragment {
+            val sf = SearchFragment()
+            val args = Bundle()
+            args.putBoolean("user_search", doUserSearch)
+            sf.arguments = args
+            return sf
+        }
+
     }
 
 }

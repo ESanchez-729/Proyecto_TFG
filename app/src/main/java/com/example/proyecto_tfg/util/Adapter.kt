@@ -39,8 +39,6 @@ class Adapter(private val dataSet: MutableList<GameItem>, private val context: C
         val status: TextView = view.findViewById(R.id.status)
         val score: TextView = view.findViewById(R.id.score)
         val scoreRating: TextView = view.findViewById(R.id.score_img)
-        val addButton : Button = view.findViewById(R.id.add_button)
-        val removeButton : Button = view.findViewById(R.id.remove_button)
 
     }
 
