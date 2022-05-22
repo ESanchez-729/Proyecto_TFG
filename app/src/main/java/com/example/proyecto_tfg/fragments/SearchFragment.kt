@@ -129,7 +129,7 @@ class SearchFragment : Fragment() {
 
                         try {
                             //Se hace la consulta y se sacan los datos.
-                            var data = usrManager.getDBManager()?.getUsersByUsername(search)
+                            val data = usrManager.getDBManager()?.getUsersByUsername(search)
                             withContext(Dispatchers.Main) {
                                 //Se cargan los datos en el recyclerView.
                                 try {

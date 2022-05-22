@@ -52,4 +52,6 @@
     <string name="save_edit">Save changes</string>
     <string name="description">Description</string>
     <string name="warn_username_not_filled">The username must be specified</string>
+    <string name="add_friend">Add friend</string>
+    <string name="remove_friend">Unfriend</string>
 </resources>

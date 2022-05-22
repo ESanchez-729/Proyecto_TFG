@@ -9,6 +9,7 @@ import com.example.proyecto_tfg.models.GameSB
 import com.example.proyecto_tfg.models.LibrarySB
 import com.example.proyecto_tfg.models.ProfileSB
 import com.google.gson.Gson
+import com.google.gson.JsonArray
 import com.google.gson.reflect.TypeToken
 import io.supabase.postgrest.PostgrestDefaultClient
 import okhttp3.MediaType.Companion.toMediaType
@@ -16,7 +17,6 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
-import org.json.JSONObject
 import java.io.IOException
 import java.net.URI
 import java.text.Normalizer
@@ -129,74 +129,189 @@ class SupabaseDBManager (con : Context, token: String){
     }
 
     /**
-     * Method that adds a register to the current user library.
-     */
-    fun addGame(library: LibrarySB) {
-        val result = postgrestClient.from<LibrarySB>("library")
-            .insert(library, upsert = true).execute()
-
-        if (result.status == 500) {
-            Log.d(":::", "Juego ya esta en la base de datos: " + library.game_id)
-        }
-        Log.d(":::", "Insert / Update Status: " + result.status)
-
-    }
-
-    /**
      * Method that updates a register from the current user library.
      */
     fun updateGameStatus(userId: String, gameId: String, status: String) {
 
-        if (status == context.getString(R.string.remove)) {
+        when (status) {
 
-            postgrestClient.from<LibrarySB>("library")
-                .delete().eq(LibrarySB::user_id, userId).eq(LibrarySB::game_id, gameId)
-                .execute()
+            context.getString(R.string.remove) -> {
 
-        } else if(status == "") {
-            return
-        }
-        else {
+                postgrestClient.from<LibrarySB>("library")
+                    .delete().eq(LibrarySB::user_id, userId).eq(LibrarySB::game_id, gameId)
+                    .execute()
 
-            val resultGet = postgrestClient.from<LibrarySB>("library")
-                .select().eq("game_id", gameId).eq("user_id", userId)
-                .execute()
-
-            val temp = JSONArray(resultGet.body)
-            val currentLine = if (temp.length() == 0) {
-                LibrarySB(
-                    user_id = userId,
-                    game_id = gameId.toInt(),
-                    status = StatusEnum.values().find { it.value == status }!!,
-                    review = "",
-                    score = -1,
-                    recommended = false
-                )
-            } else {
-                gson.fromJson(temp.getJSONObject(0).toString(), LibrarySB::class.java)
             }
 
-            currentLine.status = StatusEnum.values().find { it.value == status }!!
-            postgrestClient.from<LibrarySB>("library")
-                .insert(currentLine, upsert = true).execute()
+            "" -> { return }
 
+            else -> {
+
+                val resultGet = postgrestClient.from<LibrarySB>("library")
+                    .select().eq("game_id", gameId).eq("user_id", userId)
+                    .execute()
+
+                val temp = JSONArray(resultGet.body)
+                val currentLine = if (temp.length() == 0) {
+                    LibrarySB(
+                        user_id = userId,
+                        game_id = gameId.toInt(),
+                        status = StatusEnum.values().find { it.value == status }!!,
+                        review = "",
+                        score = -1,
+                        recommended = false
+                    )
+                } else {
+                    gson.fromJson(temp.getJSONObject(0).toString(), LibrarySB::class.java)
+                }
+
+                currentLine.status = StatusEnum.values().find { it.value == status }!!
+                postgrestClient.from<LibrarySB>("library")
+                    .insert(currentLine, upsert = true).execute()
+
+            }
         }
 
     }
 
     /**
-     * Method that deletes a register from the current user library.
+     * Function that verify if an user is already added.
      */
-    fun removeGame(userid : String, gameid : Number) {
-        val userID = UUID.fromString(userid)
-        val result = postgrestClient.from<Any>("library")
-            .delete().eq("user_id", userID).eq("game_id", gameid).execute()
+    fun alreadyAdded(watchedUserId : String, onlyAccepted : Boolean) : Boolean {
 
-        if (result.status == 500) {
-            Log.d(":::", "Error al eliminar: " + gameid + "para el usuario" + userid)
+        if (onlyAccepted) {
+
+            val userManager = SBUserManager(context)
+            val loggedUser = userManager.getUserId()!!
+            val result = postgrestClient.from<FriendlistSB>("friendlist")
+                .select().or("user.eq.$loggedUser,friend.eq.$loggedUser")
+                .or("user.eq.$watchedUserId,friend.eq.$watchedUserId")
+                .eq("accepted", true).execute()
+
+            return (result.body != "[]")
+
         }
 
-        Log.d(":::", "Delete Status: " + result.status)
+        val userManager = SBUserManager(context)
+        val loggedUser = userManager.getUserId()!!
+        val result = postgrestClient.from<FriendlistSB>("friendlist")
+            .select().or("user.eq.$loggedUser,friend.eq.$loggedUser")
+            .or("user.eq.$watchedUserId,friend.eq.$watchedUserId").execute()
+
+        return (result.body != "[]")
+
+    }
+
+    /**
+     * Function that verify if an user is already added and accepted.
+     */
+    fun getFriends(watchedUserId : String) : List<ProfileSB> {
+
+        val result = postgrestClient.from<FriendlistSB>("friendlist")
+            .select().or("user.eq.$watchedUserId,friend.eq.$watchedUserId")
+            .eq("accepted", true).execute()
+
+        val data = JSONArray(result.body)
+        val requestList = mutableListOf<ProfileSB>()
+
+        for(i in 0 until data.length()) {
+            val field = gson.fromJson(data.getJSONObject(i).toString(), FriendlistSB::class.java)
+            if (field.user == watchedUserId) {
+                getUserDataById(field.friend)?.let { requestList.add(it) }
+            } else {
+                getUserDataById(field.user)?.let { requestList.add(it) }
+            }
+        }
+
+        return requestList
+    }
+
+    /**
+     * Function that returns the pending friend requests.
+     */
+    fun getFriendRequests() : List<ProfileSB> {
+
+        val userManager = SBUserManager(context)
+        val loggedUser = userManager.getUserId()!!
+        val result = postgrestClient.from<FriendlistSB>("friendlist")
+            .select().eq("friend", loggedUser)
+            .eq("accepted", false).execute()
+
+        val data = JSONArray(result.body)
+        val requestList = mutableListOf<ProfileSB>()
+
+        for(i in 0 until data.length()) {
+            val field = gson.fromJson(data.getJSONObject(i).toString(), FriendlistSB::class.java)
+            if (field.user == loggedUser) {
+                getUserDataById(field.friend)?.let { requestList.add(it) }
+            } else {
+                getUserDataById(field.user)?.let { requestList.add(it) }
+            }
+
+        }
+
+        return requestList
+    }
+
+    /**
+     * Method that adds a friend.
+     */
+    fun addFriend(friendId: String) {
+
+        if(!alreadyAdded(friendId, false)) {
+            val userManager = SBUserManager(context)
+            val loggedUser = userManager.getUserId()!!
+            postgrestClient.from<FriendlistSB>("friendlist")
+                .insert(
+                    FriendlistSB(
+                        user = loggedUser,
+                        friend = friendId,
+                        accepted = false
+                    )
+                ).execute()
+        }
+
+    }
+
+    /**
+     * Method that adds a friend.
+     */
+    fun acceptFriend(friendId: String) {
+
+        val userManager = SBUserManager(context)
+        val loggedUser = userManager.getUserId()!!
+        val result = postgrestClient.from<FriendlistSB>("friendlist")
+            .select().or("user.eq.$friendId,friend.eq.$loggedUser")
+            .eq("accepted", false).execute()
+
+        if (result.body != "[]") {
+            val fieldToUpdate = gson.fromJson(JSONArray(result.body).getJSONObject(0).toString(), FriendlistSB::class.java)
+            fieldToUpdate.accepted = true
+            postgrestClient.from<FriendlistSB>("friendlist")
+                .insert(fieldToUpdate, upsert = true).execute()
+        }
+
+    }
+
+    /**
+     * Method that removes a friend.
+     */
+    fun removeFriend(friendId: String) {
+
+        if(alreadyAdded(friendId, false)) {
+
+            val userManager = SBUserManager(context)
+            val loggedUser = userManager.getUserId()!!
+            val result = postgrestClient.from<FriendlistSB>("friendlist")
+                .select().or("user.eq.$loggedUser,friend.eq.$loggedUser")
+                .or("user.eq.$friendId,friend.eq.$friendId")
+                .eq("accepted", true).execute()
+
+            val field = gson.fromJson(JSONArray(result.body).getJSONObject(0).toString(), FriendlistSB::class.java)
+            postgrestClient.from<FriendlistSB>("friendlist")
+                .delete().eq("user", field.user).eq("friend", field.friend).execute()
+
+        }
 
     }
 
@@ -337,4 +452,10 @@ class SupabaseDBManager (con : Context, token: String){
 data class SingleCountry (
     val id : Int,
     val name: String
+)
+
+data class FriendlistSB(
+    val user : String,
+    val friend : String,
+    var accepted : Boolean
 )

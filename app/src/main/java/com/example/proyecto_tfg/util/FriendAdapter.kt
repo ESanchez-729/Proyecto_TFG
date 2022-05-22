@@ -1,29 +1,14 @@
 package com.example.proyecto_tfg.util
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
-import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.R
-import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.models.FriendItem
-import com.example.proyecto_tfg.models.GameSB
-import com.example.proyecto_tfg.models.LibrarySB
 import com.makeramen.roundedimageview.RoundedImageView
 import com.squareup.picasso.Picasso
-import io.supabase.gotrue.http.GoTrueHttpException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.lang.IndexOutOfBoundsException
 
 
 class FriendAdapter(private val dataSet: MutableList<FriendItem>) :

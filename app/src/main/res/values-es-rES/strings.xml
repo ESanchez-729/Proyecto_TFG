@@ -46,4 +46,6 @@
     <string name="save_edit">Guardar cambios</string>
     <string name="description">Descripción</string>
     <string name="warn_username_not_filled">Se debe especificar un nombre de usuario</string>
+    <string name="add_friend">Añadir amigo</string>
+    <string name="remove_friend">Desagregar</string>
 </resources>

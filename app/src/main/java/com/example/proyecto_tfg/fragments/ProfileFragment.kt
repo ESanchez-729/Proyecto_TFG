@@ -25,6 +25,7 @@ import android.widget.*
 import com.example.proyecto_tfg.util.SupabaseDBManager
 import androidx.core.content.res.ResourcesCompat
 import android.widget.ArrayAdapter
+import com.example.proyecto_tfg.enums.WhatToListEnum
 
 class ProfileFragment : Fragment() {
 
@@ -94,7 +95,8 @@ class ProfileFragment : Fragment() {
                                 replaceFragment(
                                     LibraryFragment.newInstance(
                                         item.key,
-                                        currentProfile.user_id
+                                        currentProfile.user_id,
+                                        WhatToListEnum.GAMES
                                     )
                                 )
                             }
@@ -102,7 +104,13 @@ class ProfileFragment : Fragment() {
                         }
 
                         socialFriends.setOnClickListener {
-                            Toast.makeText(context, "Friends", Toast.LENGTH_SHORT).show()
+                            replaceFragment(
+                                LibraryFragment.newInstance(
+                                    "",
+                                    currentProfile.user_id,
+                                    WhatToListEnum.FRIENDS
+                                )
+                            )
                         }
 
                     }
@@ -135,8 +143,25 @@ class ProfileFragment : Fragment() {
 
         inflater.inflate(R.menu.profile_options, menu)
         if(currentProfile.user_id != userManager.getUserId()) {
+
             menu.findItem(R.id.profile_edit).isVisible = false
+            menu.findItem(R.id.profile_notifications).isVisible = false
+            if (dbManager.alreadyAdded(currentId, true)) {
+                menu.findItem(R.id.profile_add_friend).isVisible = false
+            } else {
+                menu.findItem(R.id.profile_remove_friend).isVisible = false
+            }
+
+        } else {
+
+            if(dbManager.getFriendRequests().isNotEmpty()) {
+                menu.findItem(R.id.profile_notifications).title = menu.findItem(R.id.profile_notifications).title.toString() + "!"
+            }
+            menu.findItem(R.id.profile_add_friend).isVisible = false
+            menu.findItem(R.id.profile_remove_friend).isVisible = false
         }
+
+        Log.d(":::subMenuCreate", menu.toString())
 
     }
 
@@ -209,6 +234,36 @@ class ProfileFragment : Fragment() {
             R.id.profile_searchFriends -> {
 
                 replaceFragment(SearchFragment.newInstance(true))
+                true
+            }
+
+            R.id.profile_add_friend -> {
+                val userManager = SBUserManager(activity as MainActivity)
+                val dbManager = userManager.getDBManager()
+                val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
+                dbManager?.addFriend(currentId)
+                true
+            }
+
+            R.id.profile_remove_friend -> {
+                val userManager = SBUserManager(activity as MainActivity)
+                val dbManager = userManager.getDBManager()
+                val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
+                dbManager?.removeFriend(currentId)
+                true
+            }
+
+            R.id.profile_notifications -> {
+
+                val userManager = SBUserManager(activity as MainActivity)
+                val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
+                replaceFragment(
+                    LibraryFragment.newInstance(
+                        "",
+                        currentId,
+                        WhatToListEnum.REQUESTS
+                    )
+                )
                 true
             }
 
