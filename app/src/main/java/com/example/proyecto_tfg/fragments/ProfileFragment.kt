@@ -130,6 +130,10 @@ class ProfileFragment : Fragment() {
                         }
                     }
                 }
+
+                finally {
+                    (activity as MainActivity).currentFragment = -1
+                }
             }
         }
     }
