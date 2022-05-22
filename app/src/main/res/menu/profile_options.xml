@@ -7,6 +7,12 @@
         android:title="@string/friend_search"
         android:id="@+id/profile_searchFriends"/>
     <item
+        android:title="@string/add_friend"
+        android:id="@+id/profile_add_friend" />
+    <item
+        android:title="@string/remove_friend"
+        android:id="@+id/profile_remove_friend" />
+    <item
         android:title="@string/notifications"
         android:id="@+id/profile_notifications"/>
     <item

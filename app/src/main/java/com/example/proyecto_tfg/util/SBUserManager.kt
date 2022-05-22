@@ -1,5 +1,6 @@
 package com.example.proyecto_tfg.util
 
+import android.app.Application
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
@@ -7,10 +8,12 @@ import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteDatabase.openOrCreateDatabase
 import android.util.Log
+import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.models.ProfileSB
 import io.supabase.gotrue.GoTrueDefaultClient
 import io.supabase.gotrue.http.GoTrueHttpException
+import io.supabase.gotrue.types.GoTrueUserAttributes
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request

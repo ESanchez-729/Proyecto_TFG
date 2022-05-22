@@ -16,12 +16,14 @@ import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
 import android.widget.Toast
 import com.example.proyecto_tfg.activities.LoginActivity
+import com.example.proyecto_tfg.enums.WhatToListEnum
 import com.example.proyecto_tfg.fragments.LibraryFragment
 import com.example.proyecto_tfg.fragments.ProfileFragment
 import com.example.proyecto_tfg.fragments.SearchFragment
 import com.example.proyecto_tfg.util.SBUserManager
 import io.supabase.gotrue.http.GoTrueHttpException
 import org.json.JSONObject
+import java.io.IOException
 
 
 class MainActivity : AppCompatActivity() {
@@ -50,20 +52,6 @@ class MainActivity : AppCompatActivity() {
         //usrManager.signUp("supatestmyvc@gmail.com", "potato200")
         //usrManager.signIn("supatestmyvc@gmail.com", "potato200")
 
-//        if (!usrManager.loggedIn()){
-//            Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
-//            val intent = Intent(this, LoginActivity::class.java)
-//            startActivity(intent)
-//        } else {
-//            try {
-//                usrManager.refreshToken()
-//            } catch (e : GoTrueHttpException) {
-//                Toast.makeText(this, "Status " + e.status + ", " + JSONObject(e.data).getString("error_description"), Toast.LENGTH_LONG).show()
-//                usrManager.deleteLocalToken()
-//                recreate()
-//            }
-//        }
-
         //Se añade funcionalidad a los botones inferiores.
         binding.bottomNavigationView.setOnItemSelectedListener {
 
@@ -71,22 +59,59 @@ class MainActivity : AppCompatActivity() {
 
                 R.id.search_button -> {
                     if (currentFragment != R.id.search_button) {
-                        replaceFragment(SearchFragment())
+                        replaceFragment(SearchFragment.newInstance(false))
                         currentFragment = R.id.search_button
                     }
                 }
                 R.id.profile_button -> {
-                    if (currentFragment != R.id.profile_button) {
-                        replaceFragment(ProfileFragment())
-                        currentFragment = R.id.profile_button
+                    try {
+
+                        if (currentFragment != R.id.profile_button) {
+                            replaceFragment(ProfileFragment.newInstance(usrManager.getUserId()!!))
+                            currentFragment = R.id.profile_button
+                        }
+
+                    } catch (e: NullPointerException) {
+
+                        if (!usrManager.loggedIn()){
+                            Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
+                            val intent = Intent(this, LoginActivity::class.java)
+                            startActivity(intent)
+                        } else if(!usrManager.validToken()) {
+                            try {
+                                usrManager.refreshToken()
+                            } catch (e : GoTrueHttpException) {
+                                Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
+                                usrManager.deleteLocalToken()
+                                recreate()
+                            }
+                        }
+
+                    } catch (e: IOException) {
+
+                        if (!usrManager.loggedIn()){
+                            Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
+                            val intent = Intent(this, LoginActivity::class.java)
+                            startActivity(intent)
+                        } else if(!usrManager.validToken()) {
+                            try {
+                                usrManager.refreshToken()
+                            } catch (e : GoTrueHttpException) {
+                                Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
+                                usrManager.deleteLocalToken()
+                                recreate()
+                            }
+                        }
+
                     }
+
                 }
                 R.id.library_button -> {
-                if (currentFragment != R.id.library_button) {
-                    replaceFragment(LibraryFragment.newInstance("", usrManager.getUserId()!!))
-                    currentFragment = R.id.library_button
+                    if (currentFragment != R.id.library_button) {
+                        replaceFragment(LibraryFragment.newInstance("", usrManager.getUserId()!!, WhatToListEnum.GAMES))
+                        currentFragment = R.id.library_button
+                    }
                 }
-            }
 
             }
 

@@ -1,13 +1,12 @@
 package com.example.proyecto_tfg.fragments
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
@@ -21,27 +20,21 @@ import com.squareup.picasso.Picasso
 import io.supabase.gotrue.http.GoTrueHttpException
 import kotlinx.coroutines.*
 import java.io.IOException
+import android.util.Log
+import android.widget.*
+import com.example.proyecto_tfg.util.SupabaseDBManager
+import androidx.core.content.res.ResourcesCompat
+import android.widget.ArrayAdapter
+import com.example.proyecto_tfg.enums.WhatToListEnum
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ProfileFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ProfileFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+
+    private var currentUserID: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
+            currentUserID = it.getString("current_user_id")
         }
     }
 
@@ -81,22 +74,29 @@ class ProfileFragment : Fragment() {
                 try {
 
                     val dbManager = userManager.getDBManager()
-                    currentProfile = dbManager?.getUserDataById(userManager.getUserId()!!)!!
+                    val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
+                    currentProfile = dbManager?.getUserDataById(currentId)!!
 
                     withContext(Dispatchers.Main) {
-                        Picasso.get().load(currentProfile.avatar_url).resize(80, 80).into(userImage)
+                        Picasso.get().load(currentProfile.avatar_url).resize(200, 200).into(userImage)
                         userName.text = currentProfile.username
                         userLocation.text = dbManager.getCountryNameById(currentProfile.country!!.toInt())
                         userDescription.text = currentProfile.description
 
+                        userImage.setOnClickListener {
+                            if(currentProfile.user_id == userManager.getUserId()) {
+                                profilePicSelection(currentProfile, dbManager)
+                            }
+                        }
+
                         for (item in libraryList){
 
                             item.value.setOnClickListener {
-                                Toast.makeText(context, item.key, Toast.LENGTH_SHORT).show()
                                 replaceFragment(
                                     LibraryFragment.newInstance(
                                         item.key,
-                                        currentProfile.user_id
+                                        currentProfile.user_id,
+                                        WhatToListEnum.GAMES
                                     )
                                 )
                             }
@@ -104,7 +104,13 @@ class ProfileFragment : Fragment() {
                         }
 
                         socialFriends.setOnClickListener {
-                            Toast.makeText(context, "Friends", Toast.LENGTH_SHORT).show()
+                            replaceFragment(
+                                LibraryFragment.newInstance(
+                                    "",
+                                    currentProfile.user_id,
+                                    WhatToListEnum.FRIENDS
+                                )
+                            )
                         }
 
                     }
@@ -114,6 +120,8 @@ class ProfileFragment : Fragment() {
                 } catch (e : IOException) {
                     try {
                         userManager.refreshToken()
+                    } catch (e : IOException) {
+                        userManager.deleteLocalToken()
                     } catch (e : IOException) {
                         userManager.deleteLocalToken()
                     } finally {
@@ -128,7 +136,33 @@ class ProfileFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
 
+        val userManager = SBUserManager(activity as MainActivity)
+        val dbManager = userManager.getDBManager()
+        val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
+        val currentProfile = dbManager?.getUserDataById(currentId)!!
+
         inflater.inflate(R.menu.profile_options, menu)
+        if(currentProfile.user_id != userManager.getUserId()) {
+
+            menu.findItem(R.id.profile_edit).isVisible = false
+            menu.findItem(R.id.profile_notifications).isVisible = false
+            if (dbManager.alreadyAdded(currentId, true)) {
+                menu.findItem(R.id.profile_add_friend).isVisible = false
+            } else {
+                menu.findItem(R.id.profile_remove_friend).isVisible = false
+            }
+
+        } else {
+
+            if(dbManager.getFriendRequests().isNotEmpty()) {
+                menu.findItem(R.id.profile_notifications).title = menu.findItem(R.id.profile_notifications).title.toString() + "!"
+            }
+            menu.findItem(R.id.profile_add_friend).isVisible = false
+            menu.findItem(R.id.profile_remove_friend).isVisible = false
+        }
+
+        Log.d(":::subMenuCreate", menu.toString())
+
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -139,6 +173,97 @@ class ProfileFragment : Fragment() {
 
                 SBUserManager(activity as MainActivity).signOut()
                 (activity as MainActivity).recreate()
+                true
+            }
+
+            R.id.profile_edit -> {
+
+                val userManager = SBUserManager(activity as MainActivity)
+                val dbManager = userManager.getDBManager()
+                val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
+                val countryList = dbManager?.getCountriesIdAndName()
+                val countryNameList = mutableListOf<String>()
+                for (country in countryList ?: hashMapOf()) {
+                    countryNameList.add(country.key)
+                }
+
+                val usernameText: EditText
+                val countryText: AutoCompleteTextView
+                val descriptionText: EditText
+
+                val editAlert: AlertDialog.Builder = AlertDialog.Builder(context)
+                val factory = LayoutInflater.from(context)
+                val editView: View = factory.inflate(R.layout.activity_editprofile, null)
+                editAlert.setView(editView)
+
+                val createdDialog = editAlert.create()
+
+                val adapter: ArrayAdapter<String> =
+                    ArrayAdapter<String>((activity as MainActivity), android.R.layout.simple_list_item_1, countryNameList)
+
+                createdDialog.show()
+                usernameText = createdDialog.findViewById(R.id.editProfile_username)
+                countryText = createdDialog.findViewById(R.id.editProfile_country)
+                countryText.setAdapter(adapter)
+                descriptionText = createdDialog.findViewById(R.id.editProfile_description)
+
+                createdDialog.findViewById<Button>(R.id.editProfile_save).setOnClickListener {
+                    if (usernameText.text.toString().trim() != "") {
+
+                        val profile = dbManager?.getUserDataById(currentId)!!
+                        profile.username = usernameText.text.toString()
+                        if(countryText.text.toString().trim() != "") {
+                            profile.country = countryList?.get(countryText.text.toString())
+                        } else {
+                            profile.country = 0
+                        }
+                        profile.description = descriptionText.text.toString()
+                        dbManager.updateProfile(profile)
+                        createdDialog.dismiss()
+                        recharge()
+                    } else {
+                        Toast.makeText((activity as MainActivity), (activity as MainActivity).getString(R.string.warn_username_not_filled), Toast.LENGTH_SHORT).show()
+                    }
+
+                }
+
+
+                true
+            }
+
+            R.id.profile_searchFriends -> {
+
+                replaceFragment(SearchFragment.newInstance(true))
+                true
+            }
+
+            R.id.profile_add_friend -> {
+                val userManager = SBUserManager(activity as MainActivity)
+                val dbManager = userManager.getDBManager()
+                val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
+                dbManager?.addFriend(currentId)
+                true
+            }
+
+            R.id.profile_remove_friend -> {
+                val userManager = SBUserManager(activity as MainActivity)
+                val dbManager = userManager.getDBManager()
+                val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
+                dbManager?.removeFriend(currentId)
+                true
+            }
+
+            R.id.profile_notifications -> {
+
+                val userManager = SBUserManager(activity as MainActivity)
+                val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
+                replaceFragment(
+                    LibraryFragment.newInstance(
+                        "",
+                        currentId,
+                        WhatToListEnum.REQUESTS
+                    )
+                )
                 true
             }
 
@@ -155,19 +280,64 @@ class ProfileFragment : Fragment() {
 
     }
 
+    private fun profilePicSelection(profile : ProfileSB, dbManager: SupabaseDBManager) {
+
+
+        var selectedImage = ""
+
+        val pictureAlert: AlertDialog.Builder = AlertDialog.Builder(context)
+        val factory = LayoutInflater.from(context)
+        val selectionView: View = factory.inflate(R.layout.menu_profile_img_selection, null)
+        pictureAlert.setView(selectionView)
+        pictureAlert.setNegativeButton("Cancel") { dlg, _ -> dlg.dismiss() }
+        pictureAlert.setPositiveButton("Confirm") { dlg, _ ->
+            profile.avatar_url = selectedImage
+            Log.d(":::imgAtConfirm", profile.avatar_url)
+            dbManager.updateProfile(profile)
+            dlg.dismiss()
+            recharge()
+        }
+
+        val createdDialog = pictureAlert.create()
+        val images = dbManager.getDefaultImages()
+        createdDialog.show()
+        var lastSelectedImage = createdDialog.findViewById<ImageView>(R.id.img1)
+        for (i in images.indices) {
+
+            if(i == 9) {break}
+            val resId = resources.getIdentifier("img${i + 1}", "id", context?.packageName)
+            val image = createdDialog.findViewById<ImageView>(resId)
+            Picasso.get().load(getString(R.string.supabase_url_view_image) + images[i]).resize(200, 200).into(image)
+            image.background = null
+            image.setPadding(0,0,0,0)
+
+            image.setOnClickListener {
+                lastSelectedImage.background = null
+                lastSelectedImage.setPadding(0,0,0,0)
+                lastSelectedImage = image
+                image.background = ResourcesCompat.getDrawable((activity as MainActivity).resources,R.drawable.image_border, null)
+                selectedImage = getString(R.string.supabase_url_view_image) + images[i]
+                Log.d(":::img", selectedImage)
+            }
+
+        }
+
+    }
+
     private fun recharge() {
         (activity as MainActivity).recreate()
     }
 
     companion object {
-        // TODO: Rename and change types and number of parameters
+
         @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ProfileFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+        fun newInstance(userID: String) : ProfileFragment {
+            val pf = ProfileFragment()
+            val args = Bundle()
+            args.putString("current_user_id", userID)
+            pf.arguments = args
+            return pf
+        }
+
     }
 }

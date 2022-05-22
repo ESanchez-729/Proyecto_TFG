@@ -75,24 +75,7 @@ class RegisterActivity : AppCompatActivity() {
                             .show()
                     }
                 }
-
             }
-
         }
-
     }
-
-    override fun onResume() {
-        super.onResume()
-
-        val usrManager = SBUserManager(this)
-
-        if (usrManager.loggedIn()){
-            Toast.makeText(this, getString(R.string.err_already_logged_in), Toast.LENGTH_LONG).show()
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-        }
-
-    }
-
 }
