@@ -23,6 +23,7 @@ import com.example.proyecto_tfg.fragments.SearchFragment
 import com.example.proyecto_tfg.util.SBUserManager
 import io.supabase.gotrue.http.GoTrueHttpException
 import org.json.JSONObject
+import java.io.IOException
 
 
 class MainActivity : AppCompatActivity() {
@@ -71,6 +72,22 @@ class MainActivity : AppCompatActivity() {
                         }
 
                     } catch (e: NullPointerException) {
+
+                        if (!usrManager.loggedIn()){
+                            Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
+                            val intent = Intent(this, LoginActivity::class.java)
+                            startActivity(intent)
+                        } else if(!usrManager.validToken()) {
+                            try {
+                                usrManager.refreshToken()
+                            } catch (e : GoTrueHttpException) {
+                                Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
+                                usrManager.deleteLocalToken()
+                                recreate()
+                            }
+                        }
+
+                    } catch (e: IOException) {
 
                         if (!usrManager.loggedIn()){
                             Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()

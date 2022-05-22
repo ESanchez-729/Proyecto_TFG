@@ -283,11 +283,18 @@ class LibraryFragment : Fragment() {
 
                                             addDialog.show()
 
+                                        } else if (!dbManager.alreadyAdded(usersData[position].userID, onlyAccepted = false)) {
+                                            val addDialog: AlertDialog.Builder = AlertDialog.Builder(context)
+                                            addDialog.setMessage("User already denied...")
+                                            addDialog.setPositiveButton("OK") { dlg, _ -> dlg.dismiss()}
+                                            addDialog.show()
+
                                         } else {
                                             val addDialog: AlertDialog.Builder = AlertDialog.Builder(context)
                                             addDialog.setMessage("User already added...")
                                             addDialog.setPositiveButton("OK") { dlg, _ -> dlg.dismiss()}
                                             addDialog.show()
+                                            
                                         }
 
                                     }
