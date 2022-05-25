@@ -72,33 +72,25 @@ class MainActivity : AppCompatActivity() {
                         }
 
                     } catch (e: NullPointerException) {
-
-                        if (!usrManager.loggedIn()){
-                            Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
-                            val intent = Intent(this, LoginActivity::class.java)
-                            startActivity(intent)
-                        } else if(!usrManager.validToken()) {
+                        if(!usrManager.validToken()) {
                             try {
                                 usrManager.refreshToken()
                             } catch (e : GoTrueHttpException) {
                                 Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
                                 usrManager.deleteLocalToken()
+                            } finally {
                                 recreate()
                             }
                         }
 
                     } catch (e: IOException) {
-
-                        if (!usrManager.loggedIn()){
-                            Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
-                            val intent = Intent(this, LoginActivity::class.java)
-                            startActivity(intent)
-                        } else if(!usrManager.validToken()) {
+                        if(!usrManager.validToken()) {
                             try {
                                 usrManager.refreshToken()
                             } catch (e : GoTrueHttpException) {
                                 Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
                                 usrManager.deleteLocalToken()
+                            } finally {
                                 recreate()
                             }
                         }
@@ -160,18 +152,15 @@ class MainActivity : AppCompatActivity() {
         val usrManager = SBUserManager(this)
         //("supatestmyvc@gmail.com", "potato200")
 
-        if (!usrManager.loggedIn()){
-            Toast.makeText(this, "User not logged in", Toast.LENGTH_LONG).show()
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
-        } else if(!usrManager.validToken()) {
-           try {
-               usrManager.refreshToken()
-           } catch (e : GoTrueHttpException) {
-               Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
-               usrManager.deleteLocalToken()
-               recreate()
-           }
+        if(!usrManager.validToken()) {
+            try {
+                usrManager.refreshToken()
+            } catch (e : GoTrueHttpException) {
+                Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
+                usrManager.deleteLocalToken()
+            } finally {
+                recreate()
+            }
         }
     }
 

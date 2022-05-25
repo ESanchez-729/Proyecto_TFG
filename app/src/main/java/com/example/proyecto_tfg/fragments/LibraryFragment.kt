@@ -86,7 +86,7 @@ class LibraryFragment : Fragment() {
 
                     val userManager = SBUserManager(context)
 
-                    if(userManager.loggedIn()) {
+                    if(userManager.validToken()) {
                         val dbManager = userManager.getDBManager()
                         var currentUser = userManager.getUserId()!!
                         if(otherUserId != null || otherUserId != "") {currentUser = otherUserId!!}
@@ -131,8 +131,17 @@ class LibraryFragment : Fragment() {
                                 val child = rv.findChildViewUnder(e.x, e.y)
 
                                 if (child != null && gestureDetector.onTouchEvent(e)) {
-                                    val position = rv.getChildAdapterPosition(child)
-                                    modifyOptions(gameData[position], position)
+
+                                    var currentUser = userManager.getUserId()!!
+                                    val loggedUser = currentUser
+                                    if(otherUserId != null || otherUserId != "") {currentUser = otherUserId!!}
+
+                                    if(currentUser == loggedUser) {
+
+                                        val position = rv.getChildAdapterPosition(child)
+                                        modifyOptions(gameData[position], position)
+
+                                    }
 
                                 }
                                 return false
@@ -156,7 +165,7 @@ class LibraryFragment : Fragment() {
 
                 CoroutineScope(Dispatchers.IO).launch {
 
-                    if(userManager.loggedIn()) {
+                    if(userManager.validToken()) {
 
                         var currentUserId = userManager.getUserId()!!
                         if(otherUserId != null || otherUserId != "") {currentUserId = otherUserId!!}
@@ -222,7 +231,7 @@ class LibraryFragment : Fragment() {
 
                 CoroutineScope(Dispatchers.IO).launch {
 
-                    if(userManager.loggedIn()) {
+                    if(userManager.validToken()) {
 
                         for (item in dbManager.getFriendRequests()) {
                             usersData.add(

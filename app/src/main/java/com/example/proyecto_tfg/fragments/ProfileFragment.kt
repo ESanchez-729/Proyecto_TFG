@@ -70,18 +70,24 @@ class ProfileFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
 
             val userManager = SBUserManager(context)
-            if(userManager.loggedIn()) {
+            if(userManager.validToken()) {
                 try {
 
                     val dbManager = userManager.getDBManager()
-                    val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
+                    val loggedUserId = userManager.getUserId()!!
+                    val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { loggedUserId }
                     currentProfile = dbManager?.getUserDataById(currentId)!!
 
                     withContext(Dispatchers.Main) {
+
                         Picasso.get().load(currentProfile.avatar_url).resize(200, 200).into(userImage)
                         userName.text = currentProfile.username
                         userLocation.text = dbManager.getCountryNameById(currentProfile.country!!.toInt())
                         userDescription.text = currentProfile.description
+
+                        if(currentId != loggedUserId) {
+                            context.currentFragment = -1
+                        }
 
                         userImage.setOnClickListener {
                             if(currentProfile.user_id == userManager.getUserId()) {
@@ -129,10 +135,6 @@ class ProfileFragment : Fragment() {
                             recharge()
                         }
                     }
-                }
-
-                finally {
-                    (activity as MainActivity).currentFragment = -1
                 }
             }
         }
@@ -295,11 +297,13 @@ class ProfileFragment : Fragment() {
         pictureAlert.setView(selectionView)
         pictureAlert.setNegativeButton("Cancel") { dlg, _ -> dlg.dismiss() }
         pictureAlert.setPositiveButton("Confirm") { dlg, _ ->
-            profile.avatar_url = selectedImage
-            Log.d(":::imgAtConfirm", profile.avatar_url)
-            dbManager.updateProfile(profile)
-            dlg.dismiss()
-            recharge()
+            if(selectedImage != "") {
+                profile.avatar_url = selectedImage
+                Log.d(":::imgAtConfirm", profile.avatar_url)
+                dbManager.updateProfile(profile)
+                dlg.dismiss()
+                recharge()
+            }
         }
 
         val createdDialog = pictureAlert.create()
