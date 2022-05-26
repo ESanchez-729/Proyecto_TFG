@@ -22,7 +22,6 @@ import com.example.proyecto_tfg.enums.StatusEnum
 import com.example.proyecto_tfg.MainActivity
 import com.example.proyecto_tfg.models.GameItem
 import com.example.proyecto_tfg.R
-import com.example.proyecto_tfg.fragments.ProfileFragment.Companion.newInstance
 import com.example.proyecto_tfg.models.FriendItem
 import com.example.proyecto_tfg.util.SBUserManager
 import com.google.gson.Gson
@@ -38,7 +37,6 @@ import kotlinx.coroutines.*
 import com.example.proyecto_tfg.models.GameSB
 import com.example.proyecto_tfg.models.ProfileSB
 import com.example.proyecto_tfg.util.FriendAdapter
-import com.example.proyecto_tfg.fragments.ProfileFragment
 
 
 class SearchFragment : Fragment() {
@@ -278,7 +276,7 @@ class SearchFragment : Fragment() {
         var finalData = sortedData
         if(dbManager != null) {
             val userData = dbManager.getLibraryByUserFilteredByStatus(usrManager.getUserId()!!, StatusEnum.values().find { it.value == "" })
-            finalData =  gameData.map { item ->
+            finalData =  sortedData.map { item ->
                 val temp = userData?.find { item2 -> item.id == item2.game_id.toInt() }
                 if (temp != null) {
                     item.status = temp.status.value
