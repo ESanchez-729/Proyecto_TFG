@@ -218,8 +218,8 @@ class ProfileFragment : Fragment() {
 
                         val profile = dbManager?.getUserDataById(currentId)!!
                         profile.username = usernameText.text.toString()
-                        if(countryText.text.toString().trim() != "") {
-                            profile.country = countryList?.get(countryText.text.toString())
+                        if(countryText.text.toString().trim() != "" && countryList?.get(countryText.text.toString()) != null) {
+                            profile.country = countryList[countryText.text.toString()]
                         } else {
                             profile.country = 0
                         }
