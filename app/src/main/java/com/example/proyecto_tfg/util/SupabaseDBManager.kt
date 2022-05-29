@@ -284,10 +284,18 @@ class SupabaseDBManager (con : Context, token: String){
             .eq("accepted", false).execute()
 
         if (result.body != "[]") {
-            val fieldToUpdate = gson.fromJson(JSONArray(result.body).getJSONObject(0).toString(), FriendlistSB::class.java)
-            fieldToUpdate.accepted = true
-            postgrestClient.from<FriendlistSB>("friendlist")
-                .insert(fieldToUpdate, upsert = true).execute()
+
+            try {
+                val fieldToUpdate = gson.fromJson(JSONArray(result.body).getJSONObject(0).toString(), FriendlistSB::class.java)
+                fieldToUpdate.accepted = true
+                postgrestClient.from<FriendlistSB>("friendlist")
+                    .insert(fieldToUpdate, upsert = true).execute()
+            }
+
+            catch ( e: Exception) {
+                e.printStackTrace()
+            }
+
         }
 
     }
@@ -365,9 +373,16 @@ class SupabaseDBManager (con : Context, token: String){
      */
     fun addProfile(profile: ProfileSB) {
 
-        Log.d(":::", Gson().toJson(profile))
-        postgrestClient.from<ProfileSB>("profile")
-            .insert(profile).execute()
+        try {
+            Log.d(":::", Gson().toJson(profile))
+            postgrestClient.from<ProfileSB>("profile")
+                .insert(profile).execute()
+        }
+        catch (e: Exception) {
+
+            e.printStackTrace()
+        }
+
 
     }
 

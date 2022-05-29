@@ -285,6 +285,7 @@ class SearchFragment : Fragment() {
             }.toMutableList()
         }
 
+        gameData = finalData
 
         //Se configura el reciclerView y se añaden los datos.
         reciclador!!.setHasFixedSize(true)
@@ -493,7 +494,7 @@ class SearchFragment : Fragment() {
         var currentOption = ""
 
         AlertDialog.Builder(activity as MainActivity)
-            .setTitle(getString(R.string.sort_search))
+            .setTitle(libItem.title)
             .setSingleChoiceItems(choices.toTypedArray(), checkedItem) { _, i ->
 
                 //Se almacena la opcion seleccionada.

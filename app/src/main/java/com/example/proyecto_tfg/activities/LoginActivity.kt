@@ -9,11 +9,16 @@ import android.widget.Toast
 import com.example.proyecto_tfg.R
 import com.example.proyecto_tfg.util.SBUserManager
 import android.content.Intent
+import android.os.NetworkOnMainThreadException
 import com.example.proyecto_tfg.MainActivity
 import io.supabase.gotrue.GoTrueClient
 import io.supabase.gotrue.GoTrueDefaultClient
 import io.supabase.gotrue.http.GoTrueHttpException
 import io.supabase.gotrue.types.GoTrueSettings
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LoginActivity : AppCompatActivity() {
 
@@ -31,17 +36,27 @@ class LoginActivity : AppCompatActivity() {
 
         loginBtn.setOnClickListener {
             if (passwordText.text.trim() != "" && emailText.text.trim() != "") {
-                try {
-                    usrManager.signIn(emailText.text.toString(), passwordText.text.toString())
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                } catch (e: GoTrueHttpException) {
-                    Toast.makeText(
-                        this,
-                        getString(R.string.err_invalid_credentials),
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
+
+                    val context = this
+
+                    CoroutineScope(Dispatchers.IO).launch {
+
+                        try {
+                        usrManager.signIn(emailText.text.toString(), passwordText.text.toString())
+                        val intent = Intent(context, MainActivity::class.java)
+                        startActivity(intent)
+                        } catch (e: GoTrueHttpException) {
+
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    getString(R.string.err_invalid_credentials),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+
             } else {
                 Toast.makeText(this, getString(R.string.err_invalid_credentials), Toast.LENGTH_LONG)
                     .show()

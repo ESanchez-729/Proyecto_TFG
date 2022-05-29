@@ -51,6 +51,12 @@ class RegisterActivity : AppCompatActivity() {
                         .show()
                 }
 
+                usernameText.text.length > 15 -> {
+
+                    Toast.makeText(this, getString(R.string.err_long_user), Toast.LENGTH_LONG)
+                        .show()
+                }
+
                 passwordText.text.toString() != confirmPasswordText.text.toString() -> {
                     Toast.makeText(
                         this,

@@ -269,21 +269,21 @@ class LibraryFragment : Fragment() {
 
                                         val position = rv.getChildAdapterPosition(child)
 
-                                        if(!dbManager.alreadyAdded(usersData[position].userID, onlyAccepted = true)) {
+                                        if(!dbManager.alreadyAdded(usersData[position].userID, onlyAccepted = false)) {
 
                                             val addDialog: AlertDialog.Builder = AlertDialog.Builder(context)
-                                            addDialog.setTitle("Confirmation")
-                                            addDialog.setMessage("Are you sure you want to add " + usersData[position].userName)
+                                            addDialog.setTitle(getString(R.string.confirmation_title))
+                                            addDialog.setMessage(getString(R.string.friendship_message) + usersData[position].userName + getString(R.string.quote))
 
-                                            addDialog.setNegativeButton("No") { dlg, _ ->
+                                            addDialog.setNegativeButton(getString(R.string.cancel_friendship)) { dlg, _ ->
                                                 dbManager.denyUser(usersData[position].userID)
                                                 dlg.dismiss()
                                             }
-                                            addDialog.setPositiveButton("Yes") { dlg, _ ->
+                                            addDialog.setPositiveButton(getString(R.string.accept_friendship)) { dlg, _ ->
                                                 dbManager.acceptFriend(usersData[position].userID)
                                                 dlg.dismiss()
                                             }
-                                            addDialog.setNeutralButton("See user") {dlg, _ ->
+                                            addDialog.setNeutralButton(getString(R.string.check_user)) {dlg, _ ->
                                                 dlg.dismiss()
                                                 replaceFragment(
                                                     ProfileFragment.newInstance(usersData[position].userID)
@@ -363,7 +363,7 @@ class LibraryFragment : Fragment() {
         var currentOption = ""
 
         AlertDialog.Builder(activity as MainActivity)
-            .setTitle(getString(R.string.sort_search))
+            .setTitle(libItem.title)
             .setSingleChoiceItems(choices.toTypedArray(), checkedItem) { _, i ->
 
                 //Se almacena la opcion seleccionada.

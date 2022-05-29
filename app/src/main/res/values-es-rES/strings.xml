@@ -2,7 +2,7 @@
 <resources>
     <string name="registration_text">Registrar cuenta</string>
     <string name="notifications">Notificaciones</string>
-    <string name="profile_menu">Pefil</string>
+    <string name="profile_menu">Perfil</string>
     <string name="search_menu">Buscar</string>
     <string name="library_menu">Biblioteca</string>
     <string name="score_field">Puntuación:</string>
@@ -45,7 +45,14 @@
     <string name="country_label">Selecciona un país</string>
     <string name="save_edit">Guardar cambios</string>
     <string name="description">Descripción</string>
-    <string name="warn_username_not_filled">Se debe especificar un nombre de usuario</string>
+    <string name="warn_username_not_filled">Nombre de usuario no válido</string>
     <string name="add_friend">Añadir amigo</string>
     <string name="remove_friend">Desagregar</string>
+    <string name="err_long_user">Nombre de usuario demasiado largo</string>
+    <string name="status_text">Modificar estado...</string>
+    <string name="confirmation_title">Confirmación</string>
+    <string name="check_user">Ver usuario</string>
+    <string name="cancel_friendship">No</string>
+    <string name="accept_friendship">Si</string>
+    <string name="friendship_message">"¿Estás seguro de añadir a "</string>
 </resources>

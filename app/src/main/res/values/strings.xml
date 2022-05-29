@@ -51,7 +51,16 @@
     <string name="country_label">Select a country</string>
     <string name="save_edit">Save changes</string>
     <string name="description">Description</string>
-    <string name="warn_username_not_filled">The username must be specified</string>
+    <string name="warn_username_not_filled">Username not valid</string>
     <string name="add_friend">Add friend</string>
     <string name="remove_friend">Unfriend</string>
+    <string name="err_long_user">Username too long</string>
+    <string name="new_notification" translatable="false">(*)</string>
+    <string name="status_text">Modify status...</string>
+    <string name="confirmation_title">Confirmation</string>
+    <string name="check_user">See user</string>
+    <string name="cancel_friendship">No</string>
+    <string name="accept_friendship">Yes</string>
+    <string name="friendship_message">Are you sure you want to add </string>
+    <string name="quote" translatable="false">?</string>
 </resources>

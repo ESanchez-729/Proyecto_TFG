@@ -163,30 +163,34 @@ class ProfileFragment : Fragment() {
 
         val userManager = SBUserManager(activity as MainActivity)
         val dbManager = userManager.getDBManager()
-        val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
-        val currentProfile = dbManager?.getUserDataById(currentId)!!
 
-        inflater.inflate(R.menu.profile_options, menu)
-        if(currentProfile.user_id != userManager.getUserId()) {
+        if (userManager.validToken() && userManager.loggedIn()) {
 
-            menu.findItem(R.id.profile_edit).isVisible = false
-            menu.findItem(R.id.profile_notifications).isVisible = false
-            if (dbManager.alreadyAdded(currentId, true)) {
-                menu.findItem(R.id.profile_add_friend).isVisible = false
+            val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { userManager.getUserId()!!}
+            val currentProfile = dbManager?.getUserDataById(currentId)!!
+
+            inflater.inflate(R.menu.profile_options, menu)
+            if(currentProfile.user_id != userManager.getUserId()) {
+
+                menu.findItem(R.id.profile_edit).isVisible = false
+                menu.findItem(R.id.profile_notifications).isVisible = false
+                if (dbManager.alreadyAdded(currentId, true)) {
+                    menu.findItem(R.id.profile_add_friend).isVisible = false
+                } else {
+                    menu.findItem(R.id.profile_remove_friend).isVisible = false
+                }
+
             } else {
+
+                if(dbManager.getFriendRequests().isNotEmpty()) {
+                    menu.findItem(R.id.profile_notifications).title = menu.findItem(R.id.profile_notifications).title.toString() + getString(R.string.new_notification)
+                }
+                menu.findItem(R.id.profile_add_friend).isVisible = false
                 menu.findItem(R.id.profile_remove_friend).isVisible = false
             }
 
-        } else {
-
-            if(dbManager.getFriendRequests().isNotEmpty()) {
-                menu.findItem(R.id.profile_notifications).title = menu.findItem(R.id.profile_notifications).title.toString() + "!"
-            }
-            menu.findItem(R.id.profile_add_friend).isVisible = false
-            menu.findItem(R.id.profile_remove_friend).isVisible = false
+            Log.d(":::subMenuCreate", menu.toString())
         }
-
-        Log.d(":::subMenuCreate", menu.toString())
 
     }
 
@@ -233,7 +237,7 @@ class ProfileFragment : Fragment() {
                 descriptionText = createdDialog.findViewById(R.id.editProfile_description)
 
                 createdDialog.findViewById<Button>(R.id.editProfile_save).setOnClickListener {
-                    if (usernameText.text.toString().trim() != "") {
+                    if (usernameText.text.toString().trim() != "" && usernameText.text.length < 15) {
 
                         val profile = dbManager?.getUserDataById(currentId)!!
                         profile.username = usernameText.text.toString()
@@ -247,6 +251,7 @@ class ProfileFragment : Fragment() {
                         createdDialog.dismiss()
                         recharge()
                     } else {
+
                         Toast.makeText((activity as MainActivity), (activity as MainActivity).getString(R.string.warn_username_not_filled), Toast.LENGTH_SHORT).show()
                     }
 
