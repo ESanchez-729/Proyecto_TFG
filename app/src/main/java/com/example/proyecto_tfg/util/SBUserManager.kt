@@ -152,7 +152,7 @@ class SBUserManager (con: Context){
     /**
      * Method that receives an email and a password and log in with them.
      */
-    private fun loggedIn(): Boolean {
+    fun loggedIn(): Boolean {
         return getToken() != null
     }
 

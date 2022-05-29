@@ -1,6 +1,7 @@
 package com.example.proyecto_tfg.fragments
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
@@ -25,6 +26,7 @@ import android.widget.*
 import com.example.proyecto_tfg.util.SupabaseDBManager
 import androidx.core.content.res.ResourcesCompat
 import android.widget.ArrayAdapter
+import com.example.proyecto_tfg.activities.LoginActivity
 import com.example.proyecto_tfg.enums.WhatToListEnum
 
 class ProfileFragment : Fragment() {
@@ -70,72 +72,89 @@ class ProfileFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
 
             val userManager = SBUserManager(context)
-            if(userManager.validToken()) {
-                try {
+            if(userManager.loggedIn()) {
 
-                    val dbManager = userManager.getDBManager()
-                    val loggedUserId = userManager.getUserId()!!
-                    val currentId = if (currentUserID != "" || currentUserID != null) { currentUserID!! } else { loggedUserId }
-                    currentProfile = dbManager?.getUserDataById(currentId)!!
+                if(userManager.validToken()) {
 
-                    withContext(Dispatchers.Main) {
+                    try {
 
-                        Picasso.get().load(currentProfile.avatar_url).resize(200, 200).into(userImage)
-                        userName.text = currentProfile.username
-                        userLocation.text = dbManager.getCountryNameById(currentProfile.country!!.toInt())
-                        userDescription.text = currentProfile.description
-
-                        if(currentId != loggedUserId) {
-                            context.currentFragment = -1
+                        val dbManager = userManager.getDBManager()
+                        val loggedUserId = userManager.getUserId()!!
+                        val currentId = if (currentUserID != "" || currentUserID != null) {
+                            currentUserID!!
+                        } else {
+                            loggedUserId
                         }
+                        currentProfile = dbManager?.getUserDataById(currentId)!!
 
-                        userImage.setOnClickListener {
-                            if(currentProfile.user_id == userManager.getUserId()) {
-                                profilePicSelection(currentProfile, dbManager)
+                        withContext(Dispatchers.Main) {
+
+                            Picasso.get().load(currentProfile.avatar_url).resize(200, 200)
+                                .into(userImage)
+                            userName.text = currentProfile.username
+                            userLocation.text =
+                                dbManager.getCountryNameById(currentProfile.country!!.toInt())
+                            userDescription.text = currentProfile.description
+
+                            if (currentId != loggedUserId) {
+                                context.currentFragment = -1
                             }
-                        }
 
-                        for (item in libraryList){
+                            userImage.setOnClickListener {
+                                if (currentProfile.user_id == userManager.getUserId()) {
+                                    profilePicSelection(currentProfile, dbManager)
+                                }
+                            }
 
-                            item.value.setOnClickListener {
+                            for (item in libraryList) {
+
+                                item.value.setOnClickListener {
+                                    replaceFragment(
+                                        LibraryFragment.newInstance(
+                                            item.key,
+                                            currentProfile.user_id,
+                                            WhatToListEnum.GAMES
+                                        )
+                                    )
+                                }
+
+                            }
+
+                            socialFriends.setOnClickListener {
                                 replaceFragment(
                                     LibraryFragment.newInstance(
-                                        item.key,
+                                        "",
                                         currentProfile.user_id,
-                                        WhatToListEnum.GAMES
+                                        WhatToListEnum.FRIENDS
                                     )
                                 )
                             }
 
                         }
 
-                        socialFriends.setOnClickListener {
-                            replaceFragment(
-                                LibraryFragment.newInstance(
-                                    "",
-                                    currentProfile.user_id,
-                                    WhatToListEnum.FRIENDS
-                                )
-                            )
-                        }
-
-                    }
-
-                } catch (e : GoTrueHttpException) {
-                    Toast.makeText(context, context.getString(R.string.err_unknown_restart_opt), Toast.LENGTH_SHORT).show()
-                } catch (e : IOException) {
-                    try {
-                        userManager.refreshToken()
-                    } catch (e : IOException) {
-                        userManager.deleteLocalToken()
-                    } catch (e : IOException) {
-                        userManager.deleteLocalToken()
-                    } finally {
-                        CoroutineScope(Dispatchers.Main).launch {
-                            recharge()
+                    } catch (e: GoTrueHttpException) {
+                        Toast.makeText(
+                            context,
+                            context.getString(R.string.err_unknown_restart_opt),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } catch (e: IOException) {
+                        try {
+                            userManager.refreshToken()
+                        } catch (e: IOException) {
+                            userManager.deleteLocalToken()
+                        } catch (e: IOException) {
+                            userManager.deleteLocalToken()
+                        } finally {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                recharge()
+                            }
                         }
                     }
                 }
+            } else {
+                val intent = Intent(activity, LoginActivity::class.java)
+                startActivity(intent)
             }
         }
     }

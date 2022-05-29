@@ -72,27 +72,41 @@ class MainActivity : AppCompatActivity() {
                         }
 
                     } catch (e: NullPointerException) {
-                        if(!usrManager.validToken()) {
-                            try {
-                                usrManager.refreshToken()
-                            } catch (e : GoTrueHttpException) {
-                                Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
-                                usrManager.deleteLocalToken()
-                            } finally {
-                                recreate()
+                        if(usrManager.loggedIn()) {
+
+                            if(!usrManager.validToken()) {
+                                try {
+                                    usrManager.refreshToken()
+                                } catch (e : GoTrueHttpException) {
+                                    Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
+                                    usrManager.deleteLocalToken()
+                                } finally {
+                                    recreate()
+                                }
                             }
+
+                        } else {
+                            val intent = Intent(this, LoginActivity::class.java)
+                            startActivity(intent)
                         }
 
                     } catch (e: IOException) {
-                        if(!usrManager.validToken()) {
-                            try {
-                                usrManager.refreshToken()
-                            } catch (e : GoTrueHttpException) {
-                                Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
-                                usrManager.deleteLocalToken()
-                            } finally {
-                                recreate()
+                        if(usrManager.loggedIn()) {
+
+                            if(!usrManager.validToken()) {
+                                try {
+                                    usrManager.refreshToken()
+                                } catch (e : GoTrueHttpException) {
+                                    Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
+                                    usrManager.deleteLocalToken()
+                                } finally {
+                                    recreate()
+                                }
                             }
+
+                        } else {
+                            val intent = Intent(this, LoginActivity::class.java)
+                            startActivity(intent)
                         }
 
                     }
@@ -152,16 +166,24 @@ class MainActivity : AppCompatActivity() {
         val usrManager = SBUserManager(this)
         //("supatestmyvc@gmail.com", "potato200")
 
-        if(!usrManager.validToken()) {
-            try {
-                usrManager.refreshToken()
-            } catch (e : GoTrueHttpException) {
-                Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
-                usrManager.deleteLocalToken()
-            } finally {
-                recreate()
+        if(usrManager.loggedIn()) {
+
+            if(!usrManager.validToken()) {
+                try {
+                    usrManager.refreshToken()
+                } catch (e : GoTrueHttpException) {
+                    Toast.makeText(this, "" + e.status + ": " + JSONObject(e.data!!).getString("error_description"), Toast.LENGTH_SHORT).show()
+                    usrManager.deleteLocalToken()
+                } finally {
+                    recreate()
+                }
             }
+
+        } else {
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
         }
+
     }
 
     override fun onBackPressed() {}
