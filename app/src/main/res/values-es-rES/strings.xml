@@ -22,7 +22,7 @@
     <string name="completed_status">Completado</string>
     <string name="playing_status">Jugando</string>
     <string name="dropped_status">Abandonado</string>
-    <string name="on_hold_status">En espera</string>
+    <string name="on_hold_status">En pausa</string>
     <string name="not_added_status">Sin añadir</string>
     <string name="library_status">Estadísticas de la libreria</string>
     <string name="social">Social</string>
@@ -36,7 +36,7 @@
     <string name="err_invalid_credentials">Correo o contraseña incorrectos</string>
     <string name="err_short_pass">Contraseña demasiado corta</string>
     <string name="err_different_passwords">Las contraseñas no coinciden</string>
-    <string name="err_invalid_email">El correo no es correcto</string>
+    <string name="err_invalid_email">El correo no es válido</string>
     <string name="err_empty_fields">Todos los campos deben ser rellenados</string>
     <string name="err_register">Hubo un error al crear la cuenta</string>
     <string name="err_unknown_restart_opt">Ha ocurrido un error. Por favor reinicia la aplicación</string>
