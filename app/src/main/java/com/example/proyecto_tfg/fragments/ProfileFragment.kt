@@ -174,7 +174,7 @@ class ProfileFragment : Fragment() {
 
                 menu.findItem(R.id.profile_edit).isVisible = false
                 menu.findItem(R.id.profile_notifications).isVisible = false
-                if (dbManager.alreadyAdded(currentId, true)) {
+                if (dbManager.alreadyAdded(currentId, false)) {
                     menu.findItem(R.id.profile_remove_friend).isVisible = true
                     menu.findItem(R.id.profile_add_friend).isVisible = false
                 } else {

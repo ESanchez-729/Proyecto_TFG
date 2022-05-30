@@ -187,8 +187,19 @@ class SupabaseDBManager (con : Context, token: String){
                 .or("user.eq.$watchedUserId,friend.eq.$watchedUserId")
                 .eq("accepted", true).execute()
 
-            Log.d("::::", result.body.toString())
-            return (result.body != "[]")
+            val data = JSONArray(result.body)
+            val requestList = mutableListOf<Int>()
+
+            for(i in 0 until data.length()) {
+                val field = gson.fromJson(data.getJSONObject(i).toString(), FriendlistSB::class.java)
+                if (field.user == watchedUserId && field.friend == loggedUser) {
+                    requestList.add(i)
+                } else if(field.friend == watchedUserId && field.user == loggedUser) {
+                    requestList.add(i)
+                }
+            }
+
+            return (requestList.isNotEmpty())
 
         }
 
@@ -198,7 +209,19 @@ class SupabaseDBManager (con : Context, token: String){
             .select().or("user.eq.$loggedUser,friend.eq.$loggedUser")
             .or("user.eq.$watchedUserId,friend.eq.$watchedUserId").execute()
 
-        return (result.body != "[]")
+        val data = JSONArray(result.body)
+        val requestList = mutableListOf<Int>()
+
+        for(i in 0 until data.length()) {
+            val field = gson.fromJson(data.getJSONObject(i).toString(), FriendlistSB::class.java)
+            if (field.user == watchedUserId && field.friend == loggedUser) {
+                requestList.add(i)
+            } else if(field.friend == watchedUserId && field.user == loggedUser) {
+                requestList.add(i)
+            }
+        }
+
+        return (requestList.isNotEmpty())
 
     }
 
@@ -328,7 +351,7 @@ class SupabaseDBManager (con : Context, token: String){
      */
     fun removeFriend(friendId: String) {
 
-        if(alreadyAdded(friendId, true)) {
+        if(alreadyAdded(friendId, false)) {
 
             val userManager = SBUserManager(context)
             val loggedUser = userManager.getUserId()!!
