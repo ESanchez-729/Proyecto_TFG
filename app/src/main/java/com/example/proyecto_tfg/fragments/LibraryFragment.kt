@@ -269,7 +269,7 @@ class LibraryFragment : Fragment() {
 
                                         val position = rv.getChildAdapterPosition(child)
 
-                                        if(!dbManager.alreadyAdded(usersData[position].userID, onlyAccepted = false)) {
+                                        if(!dbManager.alreadyAdded(usersData[position].userID, onlyAccepted = true)) {
 
                                             val addDialog: AlertDialog.Builder = AlertDialog.Builder(context)
                                             addDialog.setTitle(getString(R.string.confirmation_title))
