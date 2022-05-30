@@ -187,6 +187,7 @@ class SupabaseDBManager (con : Context, token: String){
                 .or("user.eq.$watchedUserId,friend.eq.$watchedUserId")
                 .eq("accepted", true).execute()
 
+            Log.d("::::", result.body.toString())
             return (result.body != "[]")
 
         }
